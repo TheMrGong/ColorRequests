@@ -1,0 +1,30 @@
+{
+  "name": "color-requests",
+  "version": "1.0.0",
+  "description": "Allows for users to request a color for their name",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheMrGong/ColorRequsts.git"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "color-request",
+    "javascript",
+    "node",
+    "npm"
+  ],
+  "author": "TheMrGong",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheMrGong/ColorRequsts/issues"
+  },
+  "homepage": "https://github.com/TheMrGong/ColorRequsts#readme",
+  "dependencies": {
+    "discord.js": "^11.5.0"
+  }
+}
