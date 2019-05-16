@@ -25,6 +25,7 @@ module.exports = async (reaction, user) => {
 
     if (user.id == colorRequest.requester && !accepting) // allow user to cancel their own color request
         requestApi.handleCancel(reaction.message, colorRequest)
-    else if (guildConfig.memberHasPermissionToAccept(member))
+    else if (await guildConfig.memberHasPermissionToAccept(member)) {
         requestApi.handleAcceptOrDeny(reaction.message, accepting, colorRequest)
+    }
 }

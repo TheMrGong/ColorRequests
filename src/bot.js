@@ -7,7 +7,8 @@ const client = new Discord.Client()
 
 const setup = [
     "./guildconfig/guildconfigs",
-    "./requests/requestapi"
+    "./requests/requestapi",
+    "./colorroles/roleapi"
 ]
 
 async function botStart() {

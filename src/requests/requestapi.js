@@ -8,6 +8,9 @@ const requestStore = require("./requeststore")
 
 const rgbUtil = require("../util/rgbutil")
 
+const roleApi = require("../colorroles/roleapi")
+const roleStore = require("../colorroles/rolestore")
+
 const ACCEPT_EMOJI = "✅"
 const DECLINE_EMOJI = "⛔"
 
@@ -37,7 +40,11 @@ async function createNewRequest(requestingMessage, requestingColor) {
     }
     let member = requestingMessage.member
     if (!member) member = await requestingMessage.guild.fetchMember(requestingMessage.author)
-    const requestMessage = await generateRequestMessage(requestChannelToUse, member, requestingColor)
+
+    const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, requestingMessage.author.id)
+
+    const requestMessage = await (existingRole ? generateEditMessage(requestChannelToUse, member, requestingColor)
+        : generateRequestMessage(requestChannelToUse, member, requestingColor))
     await requestStore.registerNewRequest(requestingMessage, requestMessage, requestingColor)
 }
 
@@ -49,7 +56,29 @@ async function createNewRequest(requestingMessage, requestingColor) {
 async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
     await requestStore.removeRequest(requestingMessage.guild.id, colorRequest.requester)
     await requestingMessage.delete()
-    console.log("Got an " + (accepting ? "accept" : "deny") + " for a color request")
+
+    const user = await requestingMessage.client.fetchUser(colorRequest.requester)
+    const member = await requestingMessage.guild.fetchMember(user)
+
+
+    if (accepting) {
+        const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, colorRequest.requester)
+        if (!existingRole) {
+            try {
+                await roleApi.createColorRole(requestingMessage.guild.id, member.displayName + "'s Color Role", member.user.id, colorRequest.requestedColor)
+            } catch (e) {
+                requestingMessage.channel.send("Unable to grant you the role. Missing permissions?")
+                console.error("Failed to grant color role to " + member.displayName)
+                console.error(e)
+                return
+            }
+            requestingMessage.channel.send("Granted a color role to " + member.user.toString() + "! Congratulations!")
+        } else { // editing their existing role
+            await roleApi.changeColorRoleColor(requestingMessage.guild.id, colorRequest.requester, colorRequest.requestedColor)
+            requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`)
+        }
+        console.log("[/] Accepted a color request")
+    } else console.log("[X] Declined a color request")
 }
 
 /**
@@ -92,6 +121,25 @@ async function handleCancel(message, colorRequest) {
  */
 async function generateRequestMessage(channel, requester, requestingColor) {
     let text = requester.displayName + ` is requesting for the color Red[${requestingColor.r}] Green[${requestingColor.g}] Blue[${requestingColor.b}]`
+    text += `\n${ACCEPT_EMOJI} to accept, ${DECLINE_EMOJI} to deny`
+    const message = await channel.send(text)
+
+    if (message instanceof Discord.Message) {
+        message.react(ACCEPT_EMOJI).then(() => message.react(DECLINE_EMOJI))
+
+        return message
+    }
+    else return message[0]
+}
+
+/**
+ * @param {Discord.TextChannel} channel 
+ * @param {Discord.GuildMember} requester 
+ * @param {rgbUtil.RGBColor} changingColor
+ * @returns {Promise<Discord.Message>}
+ */
+async function generateEditMessage(channel, requester, changingColor) {
+    let text = requester.displayName + ` is requesting to change their color to Red[${changingColor.r}] Green[${changingColor.g}] Blue[${changingColor.b}]`
     text += `\n${ACCEPT_EMOJI} to accept, ${DECLINE_EMOJI} to deny`
     const message = await channel.send(text)
 
