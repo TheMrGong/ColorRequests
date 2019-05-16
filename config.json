@@ -1,0 +1,12 @@
+{
+    "token": "",
+    "prefix": "-",
+    "deleteMessagesAfter": 10000,
+    "mysql": {
+        "host": "localhost",
+        "port": 3306,
+        "database": "colorrequests",
+        "username": "root",
+        "password": ""
+    }
+}
