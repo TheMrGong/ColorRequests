@@ -61,7 +61,7 @@ async function doAccept(requestingMessage, member, color) {
     const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, member.user.id)
     if (!existingRole) {
         try {
-            await roleApi.createColorRole(requestingMessage.guild.id, member.displayName + "'s Color Role", member.user.id, color)
+            await roleApi.createColorRole(requestingMessage.guild.id, member.user.username + "'s Color Role", member.user.id, color)
         } catch (e) {
             requestingMessage.channel.send("Unable to grant you the role. Missing permissions?")
             console.error("Failed to grant color role to " + member.displayName)
