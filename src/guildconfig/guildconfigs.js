@@ -6,12 +6,15 @@ const Discord = require("discord.js")
 const guildConfigs = {}
 const db = require("./guildconfigdb")
 
+const rgbUtil = require("../util/rgbutil")
+
 const DEFAULT_PERMISSION = "MANAGE_ROLES_OR_PERMISSIONS"
 
 /**
  * @typedef GuildConfig
  * @property {string|null} requestChannelId 
  * @property {string|null} acceptingRoleId
+ * @property {rgbUtil.RGBColor[]} preapprovedColors
  */
 
 /**
@@ -77,6 +80,38 @@ async function setGuildAcceptRole(guildId, acceptingRoleId) {
 }
 
 /**
+ * @param {string} guildId 
+ * @param {rgbUtil.RGBColor} color 
+ * @returns {Promise<boolean>}
+ */
+async function isPreapprovedColor(guildId, color) {
+    const guildConfig = await getGuildConfig(guildId)
+    return guildConfig.preapprovedColors.filter(it => it.hexColor() == color.hexColor()).length > 0
+}
+
+/**
+ * @param {string} guildId 
+ * @param {rgbUtil.RGBColor} color 
+ */
+async function addPreapprovedColor(guildId, color) {
+    if (await isPreapprovedColor(guildId, color)) return // color is already approved
+    const guildConfig = await getGuildConfig(guildId)
+    guildConfig.preapprovedColors.push(color)
+    await db.setGuildPreapprovedColors(guildId, ...guildConfig.preapprovedColors)
+}
+
+/**
+ * @param {string} guildId 
+ * @param {rgbUtil.RGBColor} color 
+ */
+async function removePreapprovedColor(guildId, color) {
+    if (!(await isPreapprovedColor(guildId, color))) return // color isn't approved
+    const guildConfig = await getGuildConfig(guildId)
+    guildConfig.preapprovedColors = guildConfig.preapprovedColors.filter(it => it.hexColor() != color.hexColor())
+    await db.setGuildPreapprovedColors(guildId, ...guildConfig.preapprovedColors)
+}
+
+/**
  * 
  * @param {Discord.Client} client 
  */
@@ -90,5 +125,8 @@ module.exports = {
     setGuildRequestChannel,
     memberHasPermissionToAccept,
     memberHasAcceptRole,
+    isPreapprovedColor,
+    addPreapprovedColor,
+    removePreapprovedColor,
     setup
 }

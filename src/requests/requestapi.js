@@ -13,6 +13,8 @@ const roleStore = require("../colorroles/rolestore")
 
 const requestImages = require("./requestimages")
 
+const colorAliases = require("../guildconfig/coloralias/coloraliasapi")
+
 const ACCEPT_EMOJI = "✅"
 const DECLINE_EMOJI = "⛔"
 
@@ -106,7 +108,8 @@ async function handleNewRequest(requestingMessage, requestingColor) {
         if (!member) member = await requestingMessage.guild.fetchMember(requestingMessage.author)
 
         const hasAcceptRole = await guildConfigs.memberHasAcceptRole(member)
-        if (hasAcceptRole) {
+        const isPreapproved = await guildConfigs.isPreapprovedColor(requestingMessage.guild.id, requestingColor)
+        if (hasAcceptRole || isPreapproved) {
             if (await doAccept(requestingMessage, member, requestingColor))
                 requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!")
             else requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!")
