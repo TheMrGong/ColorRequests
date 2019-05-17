@@ -139,6 +139,7 @@ async function hasPendingRequest(guildId, userId) {
  */
 async function findRequestByMessage(message) {
     const found = (await getGuildPending(message.guild.id)).filter(it => it.pendingMessage.messageId == message.id)
+    console.log("Found: " + found.length)
     if (found.length == 0) return null
     return found[0]
 }

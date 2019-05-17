@@ -12,7 +12,7 @@ const colorRoles = {}
  * @typedef ColorRole
  * @property {string} roleId
  * @property {string} roleOwner
- * @property {string} [deleting]
+ * @property {boolean} [deleting]
  */
 
 /** 

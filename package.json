@@ -25,7 +25,11 @@
   },
   "homepage": "https://github.com/TheMrGong/ColorRequsts#readme",
   "dependencies": {
+    "canvas": "git+https://github.com/Automattic/node-canvas.git",
     "discord.js": "^11.5.0",
-    "mysql": "^2.17.1"
+    "gif-frames": "^1.0.1",
+    "mysql": "^2.17.1",
+    "sharp": "^0.22.1",
+    "snekfetch": "^4.0.4"
   }
 }

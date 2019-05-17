@@ -11,6 +11,8 @@ const rgbUtil = require("../util/rgbutil")
 const roleApi = require("../colorroles/roleapi")
 const roleStore = require("../colorroles/rolestore")
 
+const requestImages = require("./requestimages")
+
 const ACCEPT_EMOJI = "✅"
 const DECLINE_EMOJI = "⛔"
 
@@ -95,7 +97,8 @@ async function handleNewRequest(requestingMessage, requestingColor) {
             return
         }
         await createNewRequest(requestingMessage, requestingColor)
-        requestingMessage.channel.send("Generated a color request.")
+        if (requestingMessage.deletable) requestingMessage.delete()
+        requestingMessage.channel.send("Color requested, waiting for admin response")
         console.log("[+] Created new color request for " + requestingMessage.author.username)
     } catch (e) {
         console.error(e)
@@ -120,9 +123,8 @@ async function handleCancel(message, colorRequest) {
  * @returns {Promise<Discord.Message>}
  */
 async function generateRequestMessage(channel, requester, requestingColor) {
-    let text = requester.displayName + ` is requesting for the color Red[${requestingColor.r}] Green[${requestingColor.g}] Blue[${requestingColor.b}]`
-    text += `\n${ACCEPT_EMOJI} to accept, ${DECLINE_EMOJI} to deny`
-    const message = await channel.send(text)
+    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL, "#" + requestingColor.hexColor())
+    const message = await channel.send(new Discord.Attachment(image, "display.gif"))
 
     if (message instanceof Discord.Message) {
         message.react(ACCEPT_EMOJI).then(() => message.react(DECLINE_EMOJI))
@@ -139,9 +141,8 @@ async function generateRequestMessage(channel, requester, requestingColor) {
  * @returns {Promise<Discord.Message>}
  */
 async function generateEditMessage(channel, requester, changingColor) {
-    let text = requester.displayName + ` is requesting to change their color to Red[${changingColor.r}] Green[${changingColor.g}] Blue[${changingColor.b}]`
-    text += `\n${ACCEPT_EMOJI} to accept, ${DECLINE_EMOJI} to deny`
-    const message = await channel.send(text)
+    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL, "#" + changingColor.hexColor())
+    const message = await channel.send(new Discord.Attachment(image, "display.gif"))
 
     if (message instanceof Discord.Message) {
         message.react(ACCEPT_EMOJI).then(() => message.react(DECLINE_EMOJI))
@@ -163,6 +164,10 @@ async function setup(client) {
     client.on("messageDelete", deletionHandler)
     client.on("messageDeleteBulk", deletionHandler)
     client.on("channelDelete", deletionHandler)
+
+    const guilds = client.guilds.array()
+    for (let k in guilds) // pre-cache all current guilds
+        await requestStore.getGuildPending(guilds[k].id)
     return requestDB.ready
 }
 
