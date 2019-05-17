@@ -30,7 +30,7 @@ module.exports = async (message) => {
 
     if (cmd.toLowerCase() == "colorrequest") {
         if (args.length == 0) {
-            message.channel.send("Usage: " + config.preifx + "colorrequest #ffffff")
+            message.channel.send("Usage: " + config.prefix + "colorrequest #ffffff\nhttps://www.google.com/search?client=firefox-b-1-d&q=hex+color+picker")
             return
         }
 
@@ -52,12 +52,15 @@ module.exports = async (message) => {
             message.channel.send("You don't have permission to set the accept role.")
             return
         }
+        let role;
+
         const mentionedRoles = message.mentions.roles.array()
-        if (mentionedRoles.length == 0) {
-            message.channel.send("Usage: " + config.prefix + "setacceptrole @Mods")
+        if (mentionedRoles.length > 0) role = mentionedRoles[0]
+        else if (args.length > 0) role = message.guild.roles.get(args[0])
+        if (!role) {
+            message.channel.send("Usage: " + config.prefix + "setacceptrole <@Mods | 481910962291736576>")
             return
         }
-        const role = mentionedRoles[0]
         guildConfig.setGuildAcceptRole(role.guild.id, role.id)
         message.channel.send("Set the accept role to " + role.name + ". Users with this role will be able to accept color change requests.")
     }
