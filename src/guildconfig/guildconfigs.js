@@ -20,15 +20,8 @@ const DEFAULT_PERMISSION = "MANAGE_ROLES_OR_PERMISSIONS"
  * @returns {Promise<boolean>}
  */
 async function memberHasPermissionToAccept(guildMember) {
-    const config = await getGuildConfig(guildMember.guild.id)
-    if (!config.acceptingRoleId)  // guild has no defined role for accepting, use permissions instead
-        return guildMember.hasPermission(DEFAULT_PERMISSION)
-    const foundRole = guildMember.guild.roles.get(config.acceptingRoleId)
-    if (!foundRole) { // the role being used was deleted from the guild
-        setGuildAcceptRole(guildMember.guild.id, null) // invalidate role on the config
-        return guildMember.hasPermission(DEFAULT_PERMISSION)
-    }
-    return guildMember.roles.has(foundRole.id)
+    if (await memberHasAcceptRole(guildMember)) return
+    return guildMember.hasPermission(DEFAULT_PERMISSION)
 }
 
 /**
