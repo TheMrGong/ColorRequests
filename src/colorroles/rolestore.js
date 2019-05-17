@@ -49,22 +49,30 @@ async function filterValidRoles(guildId, roles) {
         const guildRole = guild.roles.get(role.roleId)
         if (!guildRole) {
             invalidRoles.push(role)
-            console.log("Found role with no associated guild role")
             continue
         }
 
         const user = await client.fetchUser(role.roleOwner)
         try {
-            await guild.fetchMember(user)
+            const member = await guild.fetchMember(user)
+            if (!member.roles.has(guildRole.id)) {
+                console.log("Found user that no longer has their role " + guildId)
+                invalidRoles.push(role)
+
+                guildRole.delete().catch(e => {
+                    console.error("Unable to delete role with no assigned user")
+                    console.error(e)
+                })
+                continue
+            }
+
         } catch (e) {
             invalidRoles.push(role)
             console.log("Found role with no associated user [they left the guild?]")
-            try {
-                await guildRole.delete()
-            } catch (e) {
+            guildRole.delete().catch(e => {
                 console.error("Unable to delete role with no user")
                 console.error(e)
-            }
+            })
             continue
         }
         validRoles.push(role)
