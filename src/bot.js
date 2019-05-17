@@ -16,7 +16,9 @@ async function botStart() {
     console.log("Logging in...")
     await client.login(config.token)
     console.log("Logged in")
-    setup.forEach(api => require(api).setup(client))
+
+    for (let k in setup)
+        await require(setup[k]).setup(client)
 }
 
 client.on("error", err => {
