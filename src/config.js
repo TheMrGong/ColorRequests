@@ -1,9 +1,5 @@
 //@ts-check
 
-const fs = require("fs")
-
-const nodeUtil = require("util")
-
 //@ts-ignore
 const loadedConfig = require("../config.json")
 
