@@ -29,7 +29,8 @@ async function createColorRole(guildId, name, userId, roleColor) {
     const role = await guild.createRole({
         color: [roleColor.r, roleColor.g, roleColor.b],
         mentionable: false,
-        name
+        name,
+        permissions: 0
     }, "User color role")
 
     try {
