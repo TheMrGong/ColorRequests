@@ -20,11 +20,25 @@ async function createColorRole(guildId, name, userId, roleColor) {
     const user = await client.fetchUser(userId)
     const member = await guild.fetchMember(user)
 
+    let priortyAbove = 0;
+    member.roles.forEach(role => {
+        if (role.color != 0 && role.position > priortyAbove)
+            priortyAbove = role.position
+    })
+
     const role = await guild.createRole({
         color: [roleColor.r, roleColor.g, roleColor.b],
         mentionable: false,
         name
     }, "User color role")
+
+    try {
+        await role.setPosition(priortyAbove + 1)
+    } catch (e) {
+        await role.delete()
+        throw "User has too high of a role to give a color"
+    }
+    if (!role) throw "Couldn't create role"
     try {
         await member.addRole(role, "User color role")
     } catch (e) {
