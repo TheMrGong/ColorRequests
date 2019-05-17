@@ -7,6 +7,8 @@ const config = require("../../config")
 const guildConfig = require('../../guildconfig/guildconfigs')
 
 const requestApi = require("../requestapi")
+const colorAlias = require("../../guildconfig/coloralias/coloraliasapi")
+const requestImages = require("../requestimages")
 
 const CONFIG_PERM = "MANAGE_ROLES_OR_PERMISSIONS"
 
@@ -34,8 +36,12 @@ module.exports = async (message) => {
             return
         }
 
-        const rgb = hexToRgb(args[0])
-        if (!rgb) message.channel.send("Unable to determine RGB from hex.")
+        let rgb = hexToRgb(args[0])
+        if (!rgb) {
+            const alias = await colorAlias.getColorAlias(message.guild.id, args[0])
+            if (alias) rgb = alias.color
+        }
+        if (!rgb) message.channel.send("Unable to figure out the color.")
         else requestApi.handleNewRequest(message, rgb)
     } else if (cmd.toLowerCase() == "setcolorchannel") {
 
@@ -63,5 +69,8 @@ module.exports = async (message) => {
         }
         guildConfig.setGuildAcceptRole(role.guild.id, role.id)
         message.channel.send("Set the accept role to " + role.name + ". Users with this role will be able to accept color change requests.")
+    } else if (cmd.toLowerCase() == "available") {
+        const image = await requestImages.generateAliasHelp(message.guild, await colorAlias.getColorAliases(message.guild.id))
+        message.channel.send(new Discord.Attachment(image, "help.gif"))
     }
 }
