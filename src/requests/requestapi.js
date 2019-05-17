@@ -51,6 +51,31 @@ async function createNewRequest(requestingMessage, requestingColor) {
 }
 
 /**
+ * 
+ * @param {Discord.Message} requestingMessage 
+ * @param {Discord.GuildMember} member
+ * @param {rgbUtil.RGBColor} color 
+ * @returns {Promise<boolean>} Whether it was a change or a new role [true = new role]
+ */
+async function doAccept(requestingMessage, member, color) {
+    const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, member.user.id)
+    if (!existingRole) {
+        try {
+            await roleApi.createColorRole(requestingMessage.guild.id, member.displayName + "'s Color Role", member.user.id, color)
+        } catch (e) {
+            requestingMessage.channel.send("Unable to grant you the role. Missing permissions?")
+            console.error("Failed to grant color role to " + member.displayName)
+            console.error(e)
+            return
+        }
+        return true
+    } else { // editing their existing role
+        await roleApi.changeColorRoleColor(requestingMessage.guild.id, member.user.id, color)
+        return false
+    }
+}
+
+/**
  * @param {Discord.Message} requestingMessage 
  * @param {boolean} accepting 
  * @param {requestStore.ColorRequest} colorRequest 
@@ -64,21 +89,9 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
 
 
     if (accepting) {
-        const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, colorRequest.requester)
-        if (!existingRole) {
-            try {
-                await roleApi.createColorRole(requestingMessage.guild.id, member.displayName + "'s Color Role", member.user.id, colorRequest.requestedColor)
-            } catch (e) {
-                requestingMessage.channel.send("Unable to grant you the role. Missing permissions?")
-                console.error("Failed to grant color role to " + member.displayName)
-                console.error(e)
-                return
-            }
+        if (await doAccept(requestingMessage, member, colorRequest.requestedColor))
             requestingMessage.channel.send("Granted a color role to " + member.user.toString() + "! Congratulations!")
-        } else { // editing their existing role
-            await roleApi.changeColorRoleColor(requestingMessage.guild.id, colorRequest.requester, colorRequest.requestedColor)
-            requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`)
-        }
+        else requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`)
         console.log("[/] Accepted a color request")
     } else console.log("[X] Declined a color request")
 }
@@ -89,6 +102,17 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
  */
 async function handleNewRequest(requestingMessage, requestingColor) {
     try {
+        let member = requestingMessage.member
+        if (!member) member = await requestingMessage.guild.fetchMember(requestingMessage.author)
+
+        const hasAcceptRole = await guildConfigs.memberHasAcceptRole(member)
+        if (hasAcceptRole) {
+            if (await doAccept(requestingMessage, member, requestingColor))
+                requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!")
+            else requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!")
+            if (requestingMessage.deletable) requestingMessage.delete()
+            return
+        }
         const hasExisting = await requestStore.hasPendingRequest(requestingMessage.guild.id, requestingMessage.author.id)
         if (hasExisting) { // don't let them make additional requests
             const errorMessage = (await requestingMessage.channel.send("You already have a pending color request."))

@@ -38,7 +38,6 @@ async function createColorRole(guildId, name, userId, roleColor) {
         await role.delete()
         throw "User has too high of a role to give a color"
     }
-    if (!role) throw "Couldn't create role"
     try {
         await member.addRole(role, "User color role")
     } catch (e) {
@@ -116,13 +115,33 @@ async function changeColorRoleColor(guildId, userId, newColor) {
     const guild = client.guilds.get(guildId)
     if (!guild) throw "Guild doesn't exist"
 
+    const user = await client.fetchUser(userId)
+    const member = await guild.fetchMember(user)
+
+
     const role = await roleStore.getColorRole(guildId, userId)
     if (!role) throw "No existing color role"
+
 
     const guildRole = guild.roles.get(role.roleId)
     if (!guildRole) {
         await roleStore.unregisterColorRole(guildId, userId)
         throw "No guild role associated with color role"
+    }
+
+
+    let priortyAbove = 0;
+    member.roles.forEach(theRoles => {
+        if (theRoles.color != 0 && theRoles.id != role.roleId && theRoles.position > priortyAbove)
+            priortyAbove = theRoles.position
+    })
+
+    if (priortyAbove + 1 > guildRole.position) {
+        try {
+            await guildRole.setPosition(priortyAbove + 1)
+        } catch (e) {
+            console.error("Unable to update old role to use higher position")
+        }
     }
     await guildRole.setColor(newColor.hexColor(), "Changing user color role's color")
 }

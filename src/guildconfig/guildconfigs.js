@@ -32,6 +32,22 @@ async function memberHasPermissionToAccept(guildMember) {
 }
 
 /**
+ * 
+ * @param {Discord.GuildMember} guildMember 
+ */
+async function memberHasAcceptRole(guildMember) {
+    const config = await getGuildConfig(guildMember.guild.id)
+    if (!config.acceptingRoleId)  // guild has no defined role for accepting, nobody can have this role
+        return false
+    const foundRole = guildMember.guild.roles.get(config.acceptingRoleId)
+    if (!foundRole) { // the role being used was deleted from the guild
+        setGuildAcceptRole(guildMember.guild.id, null) // invalidate role on the config
+        return false // no role exists now
+    }
+    return guildMember.roles.has(foundRole.id)
+}
+
+/**
  * @param {string} guildId 
  * @returns {Promise<GuildConfig>}
  */
@@ -80,5 +96,6 @@ module.exports = {
     setGuildAcceptRole,
     setGuildRequestChannel,
     memberHasPermissionToAccept,
+    memberHasAcceptRole,
     setup
 }
