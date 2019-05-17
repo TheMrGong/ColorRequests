@@ -32,7 +32,9 @@ module.exports = async (message) => {
 
     if (cmd.toLowerCase() == "colorrequest") {
         if (args.length == 0) {
-            message.channel.send("Usage: " + config.prefix + "colorrequest #ffffff\nhttps://www.google.com/search?client=firefox-b-1-d&q=hex+color+picker")
+            message.channel.send("Usage: " + config.prefix + "colorrequest <#ffffff | color name>\n" +
+                "https://www.google.com/search?client=firefox-b-1-d&q=hex+color+picker\n" +
+                "To see pre-approved colors, do " + config.prefix + "available")
             return
         }
 
@@ -41,7 +43,7 @@ module.exports = async (message) => {
             const alias = await colorAlias.getColorAlias(message.guild.id, args[0])
             if (alias) rgb = alias.color
         }
-        if (!rgb) message.channel.send("Unable to figure out the color.")
+        if (!rgb) message.channel.send("Unable to figure out the color. To see ")
         else requestApi.handleNewRequest(message, rgb)
     } else if (cmd.toLowerCase() == "setcolorchannel") {
 
