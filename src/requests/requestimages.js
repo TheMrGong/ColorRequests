@@ -32,6 +32,7 @@ const DECLINE_EMOJI = "⛔"
 /**
  * 
  * @param {string} userName 
+ * @param {string} profileURL
  * @param {string} newColor 
  * @returns {Promise<Buffer>}
  */
