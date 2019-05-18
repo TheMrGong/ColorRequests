@@ -65,7 +65,7 @@ async function doAccept(requestingMessage, member, color) {
         try {
             await roleApi.createColorRole(requestingMessage.guild.id, member.user.username + "'s Color Role", member.user.id, color)
         } catch (e) {
-            requestingMessage.channel.send("Unable to grant you the role. Missing permissions?")
+            doCleanup(requestingMessage.channel.send("Unable to grant you the role. Missing permissions?"))
             console.error("Failed to grant color role to " + member.displayName)
             console.error(e)
             return
@@ -92,8 +92,8 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
 
     if (accepting) {
         if (await doAccept(requestingMessage, member, colorRequest.requestedColor))
-            requestingMessage.channel.send("Granted a color role to " + member.user.toString() + "! Congratulations!")
-        else requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`)
+            doCleanup(requestingMessage.channel.send("Granted a color role to " + member.user.toString() + "! Congratulations!"))
+        else doCleanup(requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`))
         console.log("[/] Accepted a color request")
     } else console.log("[X] Declined a color request")
 }
@@ -111,25 +111,23 @@ async function handleNewRequest(requestingMessage, requestingColor) {
         const isPreapproved = await guildConfigs.isPreapprovedColor(requestingMessage.guild.id, requestingColor)
         if (hasAcceptRole || isPreapproved) {
             if (await doAccept(requestingMessage, member, requestingColor))
-                requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!")
-            else requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!")
+                doCleanup(requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!"))
+            else doCleanup(requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!"))
             if (requestingMessage.deletable) requestingMessage.delete()
             return
         }
         const hasExisting = await requestStore.hasPendingRequest(requestingMessage.guild.id, requestingMessage.author.id)
         if (hasExisting) { // don't let them make additional requests
-            const errorMessage = (await requestingMessage.channel.send("You already have a pending color request."))
-            if (errorMessage instanceof Discord.Message)
-                errorMessage.delete(config.deleteMessagesAfter)
+            doCleanup(requestingMessage.channel.send("You already have a pending color request."))
             return
         }
         await createNewRequest(requestingMessage, requestingColor)
         if (requestingMessage.deletable) requestingMessage.delete()
-        requestingMessage.channel.send("Color requested, waiting for admin response")
+        doCleanup(requestingMessage.channel.send("Color requested, waiting for admin response"))
         console.log("[+] Created new color request for " + requestingMessage.author.username)
     } catch (e) {
         console.error(e)
-        requestingMessage.channel.send("Error occurred generating request.")
+        doCleanup(requestingMessage.channel.send("Error occurred generating request."))
     }
 }
 
@@ -196,6 +194,15 @@ async function setup(client) {
     for (let k in guilds) // pre-cache all current guilds
         await requestStore.getGuildPending(guilds[k].id)
     return requestDB.ready
+}
+
+/**
+ * @param {Promise<Discord.Message | Discord.Message[]>} promise 
+ */
+function doCleanup(promise) {
+    promise.then(it => {
+        if (it instanceof Discord.Message) it.delete(config.deleteMessagesAfter)
+    })
 }
 
 module.exports = {
