@@ -43,7 +43,7 @@ module.exports = async (message) => {
             const alias = await colorAlias.getColorAlias(message.guild.id, args[0])
             if (alias) rgb = alias.color
         }
-        if (!rgb) message.channel.send("Unable to figure out the color. To see ")
+        if (!rgb) message.channel.send("Unable to figure out the color. To see pre-approved colors, do " + config.prefix + "available")
         else requestApi.handleNewRequest(message, rgb)
     } else if (cmd.toLowerCase() == "setcolorchannel") {
 
