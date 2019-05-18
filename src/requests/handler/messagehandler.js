@@ -77,7 +77,9 @@ module.exports = async (message) => {
         guildConfig.setGuildAcceptRole(role.guild.id, role.id)
         message.channel.send("Set the accept role to " + role.name + ". Users with this role will be able to accept color change requests.")
     } else if (cmd.toLowerCase() == "available") {
-        const image = await requestImages.generateAliasHelp(message.guild, await colorAlias.getColorAliases(message.guild.id))
+        const preapproved = (await guildConfig.getGuildConfig(message.guild.id)).preapprovedColors
+        const aliases = (await colorAlias.getColorAliases(message.guild.id)).filter(it => preapproved.filter(pre => pre.hexColor() == it.color.hexColor()).length > 0)
+        const image = await requestImages.generateAliasHelp(message.guild, aliases)
         message.channel.send(new Discord.Attachment(image, "help.gif"))
     }
 }
