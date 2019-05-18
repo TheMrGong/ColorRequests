@@ -6,17 +6,18 @@ const Discord = require("discord.js")
 const { AnimationContext } = require("../util/graphics/animatorutil")
 const gifUtil = require("../util/graphics/gifutil")
 const canvasAPI = require("canvas")
+const hsv = require("rgb-hsv")
 
 const changePreviewProps = {
-    fps: 20,
-    duration: 1000 * 6,
+    fps: 1,
+    duration: 1,
     width: 380,
     height: 70
 }
 
 const aliasPreviewProps = {
-    fps: 20,
-    duration: 1000 * 6,
+    fps: 1,
+    duration: 1,
     width: 600,
     height: 200
 }
@@ -75,6 +76,8 @@ async function generateChangeImage(userName, profileURL, newColor) {
  * @returns {Promise<Buffer>} 
  */
 async function generateAliasHelp(guild, aliases) {
+    const getHue = (alias) => hsv(alias.color.r, alias.color.g, alias.color.b)[0]
+    aliases = aliases.sort((a, b) => getHue(a) - getHue(b))
     const guildIconSize = 48
     const guildIconDrawer = guild.iconURL ? await gifUtil.createURLImageDrawer(guild.iconURL, {
         width: guildIconSize
@@ -134,10 +137,11 @@ async function generateAliasHelp(guild, aliases) {
             let curX = startX
             let curY = guildIconSize + 10
 
+
             for (let k in aliases) {
                 const alias = aliases[k]
                 const width = getAliasWidth(alias)
-                if (curX + width > f.animation.width - 10) {
+                if (curX + width > f.animation.width + aliasPadding) {
                     curX = startX
                     curY += offsetY
                 }
