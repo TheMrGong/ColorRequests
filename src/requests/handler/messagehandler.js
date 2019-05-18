@@ -47,6 +47,11 @@ module.exports = async (message) => {
         else requestApi.handleNewRequest(message, rgb)
     } else if (cmd.toLowerCase() == "setcolorchannel") {
 
+        if (!member.hasPermission(CONFIG_PERM)) {
+            message.channel.send("You don't have permission to set the color channel.")
+            return
+        }
+
         const mentionedChannels = message.mentions.channels.array()
         if (mentionedChannels.length == 0) {
             message.channel.send("Usage: " + config.prefix + "setcolorchannel #my-cool-channel")
