@@ -14,7 +14,7 @@ const roleDB = require("./roledb")
  * @param {string} userId 
  * @param {rgbUtil.RGBColor} roleColor 
  */
-async function createColorRole(guildId, name, userId, roleColor) {
+async function createColorRole (guildId, name, userId, roleColor) {
     const guild = client.guilds.get(guildId)
     if (!guild) throw "Guild not found"
     const user = await client.fetchUser(userId)
@@ -30,6 +30,7 @@ async function createColorRole(guildId, name, userId, roleColor) {
         color: [roleColor.r, roleColor.g, roleColor.b],
         mentionable: false,
         name,
+        position: 1,
         permissions: 0
     }, "User color role")
 
@@ -56,7 +57,7 @@ async function createColorRole(guildId, name, userId, roleColor) {
  * @param {string} guildId 
  * @param {string} userId 
  */
-async function removeColorRole(guildId, userId) {
+async function removeColorRole (guildId, userId) {
     const role = await roleStore.getColorRole(guildId, userId)
     if (role) {
         const guild = client.guilds.get(guildId)
@@ -80,7 +81,7 @@ async function removeColorRole(guildId, userId) {
  * @param {string} guildId 
  * @param  {...roleStore.ColorRole} roles
  */
-async function removeMultipleColorRoles(guildId, ...roles) {
+async function removeMultipleColorRoles (guildId, ...roles) {
 
     const guild = client.guilds.get(guildId)
     if (!guild)  // guild doesn't exist, role all
@@ -112,7 +113,7 @@ async function removeMultipleColorRoles(guildId, ...roles) {
  * @param {string} userId 
  * @param {rgbUtil.RGBColor} newColor 
  */
-async function changeColorRoleColor(guildId, userId, newColor) {
+async function changeColorRoleColor (guildId, userId, newColor) {
     const guild = client.guilds.get(guildId)
     if (!guild) throw "Guild doesn't exist"
 
@@ -151,7 +152,7 @@ async function changeColorRoleColor(guildId, userId, newColor) {
  * 
  * @param {Discord.Client} client 
  */
-async function setup(client) {
+async function setup (client) {
     client.on("roleDelete", require("./handler/roledeleted"))
     client.on("guildMemberRemove", require("./handler/userquit"))
     client.on("guildMemberUpdate", require("./handler/memberupdate"))
