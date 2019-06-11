@@ -45,6 +45,9 @@ module.exports = async (message) => {
 
         let rgb = hexToRgb(args[0])
         if (!rgb) {
+            let colorArgument = args[0]
+            if (colorArgument.startsWith("<") && colorArgument.endsWith(">"))  // fix for those who type -colorrequest <dark-red>
+                colorArgument = colorArgument.substring(1, colorArgument.length - 1).trim()
             const alias = await colorAlias.getColorAlias(message.guild.id, args[0])
             if (alias) rgb = alias.color
         }
