@@ -17,8 +17,13 @@ const CONFIG_PERM = "MANAGE_ROLES_OR_PERMISSIONS"
 * @param {Discord.Message} message 
 */
 module.exports = async (message) => {
-
+    if (message.author.bot) return
+    if (!message.guild) {
+        message.channel.send("You can only interact with this bot within servers.")
+        return
+    }
     if (!message.content.startsWith(config.prefix)) return;
+
 
     const spaces = message.content.split(" ");
     const cmd = spaces[0].toLowerCase().substring(1, spaces[0].length).replace(/[^\w]/gm, "")
