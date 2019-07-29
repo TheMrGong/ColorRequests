@@ -14,13 +14,13 @@ const roleDB = require("./roledb")
  * @param {string} userId 
  * @param {rgbUtil.RGBColor} roleColor 
  */
-async function createColorRole (guildId, name, userId, roleColor) {
+async function createColorRole(guildId, name, userId, roleColor) {
     const guild = client.guilds.get(guildId)
     if (!guild) throw "Guild not found"
     const user = await client.fetchUser(userId)
     const member = await guild.fetchMember(user)
 
-    let priortyAbove = 0;
+    let priortyAbove = -1;
     member.roles.forEach(role => {
         if (role.color != 0 && role.position > priortyAbove)
             priortyAbove = role.position
@@ -34,12 +34,13 @@ async function createColorRole (guildId, name, userId, roleColor) {
         permissions: 0
     }, "User color role")
 
-    try {
-        await role.setPosition(priortyAbove + 1)
-    } catch (e) {
-        await role.delete()
-        throw "User has too high of a role to give a color"
-    }
+    if (priortyAbove != -1) // check if they even HAVE a role
+        try {
+            await role.setPosition(priortyAbove + 1)
+        } catch (e) {
+            await role.delete()
+            throw "User has too high of a role to give a color: " + e
+        }
     try {
         await member.addRole(role, "User color role")
     } catch (e) {
@@ -57,7 +58,7 @@ async function createColorRole (guildId, name, userId, roleColor) {
  * @param {string} guildId 
  * @param {string} userId 
  */
-async function removeColorRole (guildId, userId) {
+async function removeColorRole(guildId, userId) {
     const role = await roleStore.getColorRole(guildId, userId)
     if (role) {
         const guild = client.guilds.get(guildId)
@@ -81,7 +82,7 @@ async function removeColorRole (guildId, userId) {
  * @param {string} guildId 
  * @param  {...roleStore.ColorRole} roles
  */
-async function removeMultipleColorRoles (guildId, ...roles) {
+async function removeMultipleColorRoles(guildId, ...roles) {
 
     const guild = client.guilds.get(guildId)
     if (!guild)  // guild doesn't exist, role all
@@ -113,7 +114,7 @@ async function removeMultipleColorRoles (guildId, ...roles) {
  * @param {string} userId 
  * @param {rgbUtil.RGBColor} newColor 
  */
-async function changeColorRoleColor (guildId, userId, newColor) {
+async function changeColorRoleColor(guildId, userId, newColor) {
     const guild = client.guilds.get(guildId)
     if (!guild) throw "Guild doesn't exist"
 
@@ -152,7 +153,7 @@ async function changeColorRoleColor (guildId, userId, newColor) {
  * 
  * @param {Discord.Client} client 
  */
-async function setup (client) {
+async function setup(client) {
     client.on("roleDelete", require("./handler/roledeleted"))
     client.on("guildMemberRemove", require("./handler/userquit"))
     client.on("guildMemberUpdate", require("./handler/memberupdate"))
