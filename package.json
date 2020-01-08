@@ -32,5 +32,13 @@
     "rgb-hsv": "^1.0.0",
     "sharp": "^0.22.1",
     "snekfetch": "^4.0.4"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/node": "^7.7.0",
+    "@babel/preset-env": "^7.7.1",
+    "nodemon": "^1.19.4",
+    "rimraf": "^3.0.0"
   }
 }

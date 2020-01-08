@@ -80,7 +80,7 @@ async function removeColorRole(guildId, userId) {
 /**
  * 
  * @param {string} guildId 
- * @param  {...roleStore.ColorRole} roles
+ * @param  {...ColorRole} roles
  */
 async function removeMultipleColorRoles(guildId, ...roles) {
 

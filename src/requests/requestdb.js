@@ -1,7 +1,7 @@
 //@ts-check
 
 /**@typedef {import("./requeststore").ColorRequest} ColorRequest */
-const hexToRgb = require("../util/rgbutil")
+import hexToRgb from "../util/rgbutil"
 
 const TABLE_NAME = "requests"
 const { query } = require("../util/sql")

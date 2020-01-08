@@ -1,7 +1,7 @@
 //@ts-check
 
 const Discord = require("discord.js")
-const hexToRgb = require("../../util/rgbutil")
+import hexToRgb from "../../util/rgbutil"
 const config = require("../../config")
 
 const guildConfig = require('../../guildconfig/guildconfigs')
