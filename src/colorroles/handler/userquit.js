@@ -4,6 +4,7 @@ const Discord = require("discord.js")
 
 const roleStore = require("../rolestore")
 const roleApi = require("../roleapi")
+const groupRolesAPI = require("../../groupedroles")
 
 
 /**
@@ -15,4 +16,6 @@ module.exports = async (memberLeft) => {
         console.log("User left with a color role, removing color role")
         roleApi.removeColorRole(memberLeft.guild.id, memberLeft.user.id)
     }
+    const groupedRoles = await groupRolesAPI.findGroupRoles(memberLeft)
+    if (groupedRoles.length > 0) groupRolesAPI.handleLossRole(memberLeft, groupedRoles)
 }

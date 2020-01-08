@@ -7,14 +7,6 @@ const db = require("./roledb")
 
 /**@type {Object.<string, ColorRole[]>} */
 const colorRoles = {}
-
-/**
- * @typedef ColorRole
- * @property {string} roleId
- * @property {string} roleOwner
- * @property {boolean} [deleting]
- */
-
 /** 
  * @param {string} guildId 
  * @returns {Promise<ColorRole[]>}
@@ -96,6 +88,26 @@ async function getColorRole(guildId, userId) {
 }
 
 /**
+ * 
+ * @param {string} guildId 
+ * @param {string} color 
+ * @returns {Promise<ColorRole[]>}
+ */
+async function getRolesWithColor(guildId, color) {
+    const guild = client.guilds.get(guildId)
+    if (!guild) return []
+    const colorCompare = color.toLowerCase()
+
+    return (await getColorRoles(guildId)).filter(colorRole => {
+        const role = guild.roles.get(colorRole.roleId)
+        if (!role) return false
+        const roleColor = role.hexColor.substring(1, role.hexColor.length)
+
+        return roleColor.toLowerCase() == colorCompare
+    })
+}
+
+/**
  * @param {string} guildId 
  * @param {string} userId 
  * @param {string} roleId
@@ -104,7 +116,8 @@ async function registerColorRole(guildId, userId, roleId) {
     const roles = await getColorRoles(guildId)
     roles.push({
         roleId,
-        roleOwner: userId
+        roleOwner: userId,
+        deleting: undefined
     })
     await db.registerNewRole(guildId, roleId, userId)
 }
@@ -135,5 +148,7 @@ module.exports = {
     getColorRoles,
     getColorRole,
     registerColorRole,
-    unregisterColorRole
+    getRolesWithColor,
+    unregisterColorRole,
+    unregisterMultipleColorRoles
 }

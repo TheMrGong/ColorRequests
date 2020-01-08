@@ -1,8 +1,5 @@
 //@ts-check
 
-/**@typedef {import("./rolestore").ColorRole} ColorRole */
-const hexToRgb = require("../util/rgbutil")
-
 const TABLE_NAME = "color_roles"
 const { query } = require("../util/sql")
 
@@ -30,7 +27,8 @@ async function getGuildRoles(guildId) {
         const result = results[k]
         response.push({
             roleId: result.roleId,
-            roleOwner: result.roleOwner
+            roleOwner: result.roleOwner,
+            deleting: undefined
         })
     }
     return results

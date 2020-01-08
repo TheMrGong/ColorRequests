@@ -12,8 +12,10 @@ const roleApi = require("../colorroles/roleapi")
 const roleStore = require("../colorroles/rolestore")
 
 const requestImages = require("./requestimages")
-
 const colorAliases = require("../guildconfig/coloralias/coloraliasapi")
+const discordUtil = require("../util/discordutil")
+
+import { createGroupedRole, findGroupedRole, findGroupRoles, handleLossRole } from "../groupedroles"
 
 const ACCEPT_EMOJI = "✅"
 const DECLINE_EMOJI = "⛔"
@@ -61,6 +63,50 @@ async function createNewRequest(requestingMessage, requestingColor) {
  */
 async function doAccept(requestingMessage, member, color) {
     const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, member.user.id)
+    const groupRoleForColor = await findGroupedRole(requestingMessage.guild.id, color.hexColor())
+
+    const oldGroupRoles = (await findGroupRoles(member)).filter(it => !groupRoleForColor || it.id != groupRoleForColor.getRoleId())
+    if (oldGroupRoles.length > 0) {
+        await member.removeRoles(oldGroupRoles)
+        await handleLossRole(member, oldGroupRoles)
+    }
+
+    const giveGroupRole = async () => {
+        const groupRole = groupRoleForColor && requestingMessage.guild.roles.get(groupRoleForColor.getRoleId())
+        if (!groupRole) {
+
+            requestingMessage.channel.send("Unable to grant you the role, couldn't find grouped role?")
+            console.error("Unable to find group role for " + (groupRoleForColor && groupRoleForColor.getRoleColor()))
+            return false
+        }
+        if (existingRole)
+            await roleApi.removeColorRole(member.guild.id, member.user.id)
+        await member.addRole(groupRole)
+        return true
+    }
+
+    if (groupRoleForColor)
+        return giveGroupRole() ? true : undefined
+
+    const rolesWithColor = await roleStore.getRolesWithColor(member.guild.id, color.hexColor())
+    if (rolesWithColor.length + 1 >= 2) {
+        if (existingRole) {
+            await mergeSameColorRoles(requestingMessage.guild, [existingRole, ...rolesWithColor], color)
+        } else {
+            const groupRole = await mergeSameColorRoles(requestingMessage.guild, rolesWithColor, color)
+            const highestColorCurrently = discordUtil.findHighestColorPriority(member) + 1
+            if (groupRole.calculatedPosition < highestColorCurrently) {
+                try {
+                    groupRole.setPosition(highestColorCurrently, false)
+                } catch (e) {
+                    console.error("Unable to change group role to match " + member.displayName + "'s highest color", e)
+                }
+            }
+            await member.addRole(groupRole)
+        }
+        return true
+    }
+
     if (!existingRole) {
         try {
             await roleApi.createColorRole(requestingMessage.guild.id, member.user.username + "'s Color Role", member.user.id, color)
@@ -75,6 +121,47 @@ async function doAccept(requestingMessage, member, color) {
         await roleApi.changeColorRoleColor(requestingMessage.guild.id, member.user.id, color)
         return false
     }
+}
+
+/**
+ * @param {Discord.Guild} guild
+ * @param {ColorRole[]} sameRoles 
+ * @param {RGBColor} color
+ * @returns {Promise<Discord.Role>} if initiator was able to get their role
+ */
+async function mergeSameColorRoles(guild, sameRoles, color) {
+    const alias = (await colorAliases.getColorAliases(guild.id)).find(it => it.color.hexColor() == color.hexColor())
+    const name = alias ? "Grouped " + alias.name : "Grouped #" + color.hexColor()
+
+    const existingGroupedRole = await findGroupedRole(guild.id, color.hexColor())
+    let role;
+    if (existingGroupedRole)
+        role = guild.roles.get(existingGroupedRole.getRoleId())
+    if (!role) role = await createGroupedRole(guild.id, color, name)
+
+    let highestPosition = 0
+
+    await roleApi.removeMultipleColorRoles(guild.id, ...sameRoles)
+    for (let colorRole of sameRoles) {
+        try {
+            const owner = await guild.fetchMember(colorRole.roleOwner)
+            const highestPriority = discordUtil.findHighestColorPriority(owner)
+            if (highestPriority > highestPosition)
+                highestPosition = highestPriority
+            await owner.addRole(role)
+        } catch (e) {
+            console.warn("Unable to give color role for " + colorRole.roleOwner, e)
+        }
+    }
+
+    if (highestPosition != 0) {
+        try {
+            role = await role.setPosition(highestPosition + 1, false)
+        } catch (e) {
+            console.warn("Failed to update group role position", e)
+        }
+    }
+    return role
 }
 
 /**

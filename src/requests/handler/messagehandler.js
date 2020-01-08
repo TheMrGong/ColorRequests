@@ -87,7 +87,38 @@ module.exports = async (message) => {
     } else if (cmd.toLowerCase() == "available") {
         const preapproved = (await guildConfig.getGuildConfig(message.guild.id)).preapprovedColors
         const aliases = (await colorAlias.getColorAliases(message.guild.id)).filter(it => preapproved.filter(pre => pre.hexColor() == it.color.hexColor()).length > 0)
-        const image = await requestImages.generateAliasHelp(message.guild, aliases)
-        message.channel.send(new Discord.Attachment(image, "help.gif"))
+    } else if (cmd.toLowerCase() == "cleanup") {
+        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+            message.channel.send("You don't have permission to cleanup the server")
+            return
+        }
+        const colorRoles = await roleStore.getColorRoles(message.guild.id)
+
+        /**@type {Object.<string, ColorRole[]>} */
+        let tooMany = {}
+
+        /**@type {Object.<string, ColorRole[]>} */
+        let sameColor = {}
+        for (let colorRole of colorRoles) {
+            const role = message.guild.roles.get(colorRole.roleId)
+            if (!role) continue
+            const colors = sameColor[role.hexColor] || (sameColor[role.hexColor] = [])
+            colors.push(colorRole)
+            if (colors.length > 1) tooMany[role.hexColor] = colors
+        }
+
+        const colorsWithTooMany = Object.keys(tooMany)
+        if (colorsWithTooMany.length > 0) {
+            message.channel.send("Merging " + colorsWithTooMany.length + " different colors into their own groups")
+        } else message.channel.send("Didn't find any colors to merge")
+        for (let color in tooMany) {
+            console.log("Merging color " + color)
+            try {
+                await requestApi.mergeSameColorRoles(message.guild, tooMany[color], hexToRgb(color))
+            } catch (e) {
+                console.error(e, "Failed to merge for color " + color)
+            }
+        }
+        message.channel.send("Finished merging colors!")
     }
 }
