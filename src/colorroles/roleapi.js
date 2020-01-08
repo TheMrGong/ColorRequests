@@ -6,6 +6,7 @@ const client = require("../bot").client
 const rgbUtil = require("../util/rgbutil")
 const roleStore = require("./rolestore")
 const roleDB = require("./roledb")
+const discordUtil = require("../util/discordutil")
 
 /**
  * 
@@ -20,11 +21,7 @@ async function createColorRole(guildId, name, userId, roleColor) {
     const user = await client.fetchUser(userId)
     const member = await guild.fetchMember(user)
 
-    let priortyAbove = -1;
-    member.roles.forEach(role => {
-        if (role.color != 0 && role.position > priortyAbove)
-            priortyAbove = role.position
-    })
+    const priortyAbove = discordUtil.findHighestColorPriority(member)
 
     const role = await guild.createRole({
         color: [roleColor.r, roleColor.g, roleColor.b],
@@ -34,7 +31,7 @@ async function createColorRole(guildId, name, userId, roleColor) {
         permissions: 0
     }, "User color role")
 
-    if (priortyAbove != -1) // check if they even HAVE a role
+    if (priortyAbove != 0) // check if they even HAVE a role
         try {
             await role.setPosition(priortyAbove + 1)
         } catch (e) {
@@ -64,7 +61,7 @@ async function removeColorRole(guildId, userId) {
         const guild = client.guilds.get(guildId)
         if (!guild) throw "Guild not found"
         const guildRole = guild.roles.get(role.roleId)
-        if (guildRole) {
+        if (guildRole && !role.deleting) {
             role.deleting = true
             try {
                 await guildRole.delete("Removing user color role")
@@ -109,7 +106,6 @@ async function removeMultipleColorRoles(guildId, ...roles) {
 }
 
 /**
- * 
  * @param {string} guildId 
  * @param {string} userId 
  * @param {rgbUtil.RGBColor} newColor 
@@ -132,14 +128,13 @@ async function changeColorRoleColor(guildId, userId, newColor) {
         throw "No guild role associated with color role"
     }
 
-
     let priortyAbove = 0;
     member.roles.forEach(theRoles => {
-        if (theRoles.color != 0 && theRoles.id != role.roleId && theRoles.position > priortyAbove)
-            priortyAbove = theRoles.position
+        if (theRoles.color != 0 && theRoles.id != role.roleId && theRoles.calculatedPosition > priortyAbove)
+            priortyAbove = theRoles.calculatedPosition
     })
 
-    if (priortyAbove + 1 > guildRole.position) {
+    if (priortyAbove + 1 > guildRole.calculatedPosition) {
         try {
             await guildRole.setPosition(priortyAbove + 1)
         } catch (e) {
