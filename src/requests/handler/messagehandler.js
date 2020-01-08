@@ -9,8 +9,11 @@ const guildConfig = require('../../guildconfig/guildconfigs')
 const requestApi = require("../requestapi")
 const colorAlias = require("../../guildconfig/coloralias/coloraliasapi")
 const requestImages = require("../requestimages")
+const roleStore = require("../../colorroles/rolestore")
 
 const CONFIG_PERM = "MANAGE_ROLES_OR_PERMISSIONS"
+
+const GONGO = "192813299409223682"
 
 /**
 * 
@@ -48,14 +51,14 @@ module.exports = async (message) => {
             let colorArgument = args[0]
             if (colorArgument.startsWith("<") && colorArgument.endsWith(">"))  // fix for those who type -colorrequest <dark-red>
                 colorArgument = colorArgument.substring(1, colorArgument.length - 1).trim()
-            const alias = await colorAlias.getColorAlias(message.guild.id, args[0])
+            const alias = await colorAlias.getColorAlias(message.guild.id, colorArgument)
             if (alias) rgb = alias.color
         }
         if (!rgb) message.channel.send("Unable to figure out the color. To see pre-approved colors, do " + config.prefix + "available")
         else requestApi.handleNewRequest(message, rgb)
     } else if (cmd.toLowerCase() == "setcolorchannel") {
 
-        if (!member.hasPermission(CONFIG_PERM)) {
+        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to set the color channel.")
             return
         }
@@ -69,7 +72,7 @@ module.exports = async (message) => {
         guildConfig.setGuildRequestChannel(channel.guild.id, channel.id)
         message.channel.send("Set the color channel to " + channel.toString() + ". All requests will be shown there.")
     } else if (cmd.toLowerCase() == "setacceptrole") {
-        if (!member.hasPermission(CONFIG_PERM)) {
+        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to set the accept role.")
             return
         }
@@ -87,6 +90,12 @@ module.exports = async (message) => {
     } else if (cmd.toLowerCase() == "available") {
         const preapproved = (await guildConfig.getGuildConfig(message.guild.id)).preapprovedColors
         const aliases = (await colorAlias.getColorAliases(message.guild.id)).filter(it => preapproved.filter(pre => pre.hexColor() == it.color.hexColor()).length > 0)
+        const image = await requestImages.generateAliasHelp(message.guild, aliases).catch(e => {
+            console.error("Error generating alias help", e)
+            return undefined
+        })
+        if (!image) message.channel.send("Error generating image!")
+        else message.channel.send(new Discord.Attachment(image, "help.gif"))
     } else if (cmd.toLowerCase() == "cleanup") {
         if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to cleanup the server")
