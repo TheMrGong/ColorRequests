@@ -23,13 +23,14 @@ async function convertImagesToGif(fps, buffers, width, height) {
             '-i',
             '-',
             '-lavfi',
-            `palettegen=reserve_transparent=0:stats_mode=diff[pal],[0:v][pal]paletteuse=dither=heckbert:new=1`,//  Take a new pallette for each output frame
+            `palettegen=reserve_transparent=0:stats_mode=diff[pal],[0:v][pal]paletteuse=dither=heckbert`,//  Take a new pallette for each output frame
             '-f',
             'gif',
             '-r',
             `${fps}`,
             'pipe:1'
         ]) // uncomment for debugging
+
         // ffmpeg.stderr.on("data", data => {
         //     console.log(data.toString())
         // })

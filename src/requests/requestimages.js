@@ -22,8 +22,8 @@ const aliasPreviewProps = {
     height: 200
 }
 
-canvasAPI.registerFont("./font/Whitney Medium.ttf", { family: "Whitney-Medium" })
-canvasAPI.registerFont("./font/Whitney Book.ttf", { family: "Whitney-Book" })
+canvasAPI.registerFont(process.env.APP_ROOT + "/font/Whitney Medium.ttf", { family: "Whitney-Medium" })
+canvasAPI.registerFont(process.env.APP_ROOT + "/font/Whitney Book.ttf", { family: "Whitney-Book" })
 
 
 const ACCEPT_EMOJI = "✅"
