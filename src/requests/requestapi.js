@@ -111,7 +111,7 @@ async function doAccept(requestingMessage, member, color) {
         try {
             await roleApi.createColorRole(requestingMessage.guild.id, member.user.username + "'s Color Role", member.user.id, color)
         } catch (e) {
-            doCleanup(requestingMessage.channel.send("Unable to grant you the role. Missing permissions?"))
+            requestingMessage.channel.send("Unable to grant you the role. Missing permissions?")
             console.error("Failed to grant color role to " + member.displayName)
             console.error(e)
             return
@@ -179,8 +179,8 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
 
     if (accepting) {
         if (await doAccept(requestingMessage, member, colorRequest.requestedColor))
-            doCleanup(requestingMessage.channel.send("Granted a color role to " + member.user.toString() + "! Congratulations!"))
-        else doCleanup(requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`))
+            requestingMessage.channel.send("Granted a color role to " + member.user.toString() + "! Congratulations!")
+        else requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`)
         console.log("[/] Accepted a color request")
     } else console.log("[X] Declined a color request")
 }
@@ -198,23 +198,23 @@ async function handleNewRequest(requestingMessage, requestingColor) {
         const isPreapproved = await guildConfigs.isPreapprovedColor(requestingMessage.guild.id, requestingColor)
         if (hasAcceptRole || isPreapproved) {
             if (await doAccept(requestingMessage, member, requestingColor))
-                doCleanup(requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!"))
-            else doCleanup(requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!"))
-            if (requestingMessage.deletable) requestingMessage.delete()
+                requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!")
+            else requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!")
+
             return
         }
         const hasExisting = await requestStore.hasPendingRequest(requestingMessage.guild.id, requestingMessage.author.id)
         if (hasExisting) { // don't let them make additional requests
-            doCleanup(requestingMessage.channel.send("You already have a pending color request."))
+            requestingMessage.channel.send("You already have a pending color request.")
             return
         }
         await createNewRequest(requestingMessage, requestingColor)
         if (requestingMessage.deletable) requestingMessage.delete()
-        doCleanup(requestingMessage.channel.send("Color requested, waiting for admin response"))
+        requestingMessage.channel.send("Color requested, waiting for admin response")
         console.log("[+] Created new color request for " + requestingMessage.author.username)
     } catch (e) {
         console.error(e)
-        doCleanup(requestingMessage.channel.send("Error occurred generating request."))
+        requestingMessage.channel.send("Error occurred generating request.")
     }
 }
 
@@ -270,6 +270,7 @@ async function generateEditMessage(channel, requester, changingColor) {
  */
 async function setup(client) {
     client.on("messageReactionAdd", require("./handler/reactionhandler"))
+    //@ts-ignore
     client.on("message", require("./handler/messagehandler"))
 
     const deletionHandler = require("./handler/deletionhandler")
@@ -280,16 +281,8 @@ async function setup(client) {
     const guilds = client.guilds.array()
     for (let k in guilds) // pre-cache all current guilds
         await requestStore.getGuildPending(guilds[k].id)
+    //@ts-ignore
     return requestDB.ready
-}
-
-/**
- * @param {Promise<Discord.Message | Discord.Message[]>} promise 
- */
-function doCleanup(promise) {
-    promise.then(it => {
-        if (it instanceof Discord.Message) it.delete(config.deleteMessagesAfter)
-    })
 }
 
 module.exports = {
@@ -298,6 +291,19 @@ module.exports = {
     handleAcceptOrDeny,
     handleNewRequest,
     handleCancel,
+    findGroupedRole,
+    mergeSameColorRoles,
     ACCEPT_EMOJI,
     DECLINE_EMOJI
+}
+export {
+    setup,
+    createNewRequest,
+    handleAcceptOrDeny,
+    handleNewRequest,
+    handleCancel,
+    findGroupedRole,
+    ACCEPT_EMOJI,
+    DECLINE_EMOJI,
+    mergeSameColorRoles
 }
