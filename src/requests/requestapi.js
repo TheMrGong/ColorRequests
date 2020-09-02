@@ -194,10 +194,17 @@ async function handleNewRequest(requestingMessage, requestingColor) {
         let member = requestingMessage.member
         if (!member) member = await requestingMessage.guild.fetchMember(requestingMessage.author)
 
+        if(!(await guildConfigs.memberCanChangeColor(member))) {
+            const role = member.guild.roles.get((await guildConfigs.getGuildConfig(member.guild.id)).colorChangePermRoleId)
+            requestingMessage.channel.send("You need the " + role.name + " role to change your color")
+            return
+        }
         const hasAcceptRole = await guildConfigs.memberHasAcceptRole(member)
         const isPreapproved = await guildConfigs.isPreapprovedColor(requestingMessage.guild.id, requestingColor)
         if (hasAcceptRole || isPreapproved) {
-            if (await doAccept(requestingMessage, member, requestingColor))
+            const result = await doAccept(requestingMessage, member, requestingColor)
+            if(result === undefined) return
+            if (result)
                 requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!")
             else requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!")
 

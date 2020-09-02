@@ -14,6 +14,7 @@ const DEFAULT_PERMISSION = "MANAGE_ROLES_OR_PERMISSIONS"
  * @typedef GuildConfig
  * @property {string|null} requestChannelId 
  * @property {string|null} acceptingRoleId
+ * @property {string|null} colorChangePermRoleId
  * @property {rgbUtil.RGBColor[]} preapprovedColors
  */
 
@@ -39,6 +40,21 @@ async function memberHasAcceptRole(guildMember) {
     if (!foundRole) { // the role being used was deleted from the guild
         setGuildAcceptRole(guildMember.guild.id, null) // invalidate role on the config
         return false // no role exists now
+    }
+    return guildMember.roles.has(foundRole.id)
+}
+
+/**
+ * 
+ * @param {Discord.GuildMember} guildMember 
+ */
+async function memberCanChangeColor(guildMember) {
+    const config = await getGuildConfig(guildMember.guild.id)
+    if(!config.colorChangePermRoleId) return true
+    const foundRole = guildMember.guild.roles.get(config.colorChangePermRoleId)
+    if(!foundRole) {
+        setGuildChangeRole(guildMember.guild.id, null)
+        return true
     }
     return guildMember.roles.has(foundRole.id)
 }
@@ -77,6 +93,17 @@ async function setGuildAcceptRole(guildId, acceptingRoleId) {
     const guildConfig = await getGuildConfig(guildId)
     guildConfig.acceptingRoleId = acceptingRoleId
     await db.setGuildAcceptRoleId(guildId, acceptingRoleId)
+}
+
+/**
+ * 
+ * @param {string} guildId 
+ * @param {string} changeRoleId 
+ */
+async function setGuildChangeRole(guildId, changeRoleId) {
+    const guildConfig = await getGuildConfig(guildId)
+    guildConfig.colorChangePermRoleId = changeRoleId
+    await db.setGuildChangeRoleId(guildId, changeRoleId)
 }
 
 /**
@@ -122,9 +149,11 @@ async function setup(client) {
 module.exports = {
     getGuildConfig,
     setGuildAcceptRole,
+    setGuildChangeRole,
     setGuildRequestChannel,
     memberHasPermissionToAccept,
     memberHasAcceptRole,
+    memberCanChangeColor,
     isPreapprovedColor,
     addPreapprovedColor,
     removePreapprovedColor,

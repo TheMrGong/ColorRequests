@@ -15,11 +15,28 @@ const CREATE_TABLE = `CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     PRIMARY KEY(guildId)
 )`
 
-const ready = query(CREATE_TABLE, [])
+const SETUP_COLUMNS = [
+    `ALTER TABLE ${TABLE_NAME} ADD requestChannelId BIGINT`,
+    `ALTER TABLE ${TABLE_NAME} ADD acceptRoleId BIGINT`,
+    `ALTER TABLE ${TABLE_NAME} ADD preapproved_colors VARCHAR(1024)`,
+    `ALTER TABLE ${TABLE_NAME} ADD colorChangePermRoleId BIGINT`
+]
+
+const ready = new Promise((resolve, reject) => {
+    query(CREATE_TABLE, []).then(async () => {
+        for(const setup of SETUP_COLUMNS) {
+            //@ts-ignore
+            try {
+                await query(setup, [])
+            } catch(e) {}
+        }
+        resolve()
+    })
+})
 const rgbUtil = require("../util/rgbutil")
 
 const QUERY_CONFIG = `SELECT requestChannelId, acceptRoleId, preapproved_colors FROM ${TABLE_NAME} WHERE guildId = ?`
-const SET_CONFIG = (type) => `INSERT INTO ${TABLE_NAME} (guildId, requestChannelId, acceptRoleId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ${type} = VALUES(${type})`
+const SET_CONFIG = (type) => `INSERT INTO ${TABLE_NAME} (guildId, requestChannelId, acceptRoleId, colorChangePermRoleId) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE ${type} = VALUES(${type})`
 const SET_COLORS = `INSERT INTO ${TABLE_NAME} (guildId, preapproved_colors) VALUES (?, ?) ON DUPLICATE KEY UPDATE preapproved_colors = VALUES(preapproved_colors)`
 
 /**
@@ -28,12 +45,16 @@ const SET_COLORS = `INSERT INTO ${TABLE_NAME} (guildId, preapproved_colors) VALU
  */
 async function getGuildConfig(guildId) {
     const result = await query(QUERY_CONFIG, [guildId])
-    if (result.length == 0)
+    if (result.length == 0) {
+        const colors = defaultAliases.map(it => it.color)
+        await setGuildPreapprovedColors(guildId, ...colors)
         return {
             requestChannelId: null,
             acceptingRoleId: null,
-            preapprovedColors: []
+            colorChangePermRoleId: null,
+            preapprovedColors: colors
         }
+    }
     const data = result[0]
     const colorData = data.preapproved_colors
     /**@type {rgbUtil.RGBColor[]} */
@@ -52,7 +73,8 @@ async function getGuildConfig(guildId) {
     return {
         acceptingRoleId: data.acceptRoleId,
         requestChannelId: data.requestChannelId,
-        preapprovedColors
+        preapprovedColors,
+        colorChangePermRoleId: data.colorChangePermRoleId
     }
 }
 
@@ -61,7 +83,7 @@ async function getGuildConfig(guildId) {
  * @param {string} requestChannelId 
  */
 async function setGuildRequestChannelId(guildId, requestChannelId) {
-    return await query(SET_CONFIG("requestChannelId"), [guildId, requestChannelId, null])
+    return await query(SET_CONFIG("requestChannelId"), [guildId, requestChannelId, null, null])
 }
 
 /**
@@ -69,7 +91,11 @@ async function setGuildRequestChannelId(guildId, requestChannelId) {
  * @param {string} acceptRoleId 
  */
 async function setGuildAcceptRoleId(guildId, acceptRoleId) {
-    return await query(SET_CONFIG("acceptRoleId"), [guildId, null, acceptRoleId])
+    return await query(SET_CONFIG("acceptRoleId"), [guildId, null, acceptRoleId, null])
+}
+
+async function setGuildChangeRoleId(guildId, changeRoleId) {
+    return await query(SET_CONFIG("colorChangePermRoleId"), [guildId, null, null, changeRoleId])
 }
 
 /**
@@ -86,5 +112,6 @@ module.exports = {
     getGuildConfig,
     setGuildRequestChannelId,
     setGuildAcceptRoleId,
+    setGuildChangeRoleId,
     setGuildPreapprovedColors
 }

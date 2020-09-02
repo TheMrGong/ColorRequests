@@ -87,6 +87,29 @@ module.exports = async (message) => {
         }
         guildConfig.setGuildAcceptRole(role.guild.id, role.id)
         message.channel.send("Set the accept role to " + role.name + ". Users with this role will be able to accept color change requests.")
+    } else if(cmd.toLowerCase() == "setchangerole") {
+        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+            message.channel.send("You don't have permission to set the change role.")
+            return
+        }
+        let role;
+
+        const mentionedRoles = message.mentions.roles.array()
+        if (mentionedRoles.length > 0) role = mentionedRoles[0]
+        else if (args.length > 0) role = message.guild.roles.get(args[0])
+        if (!role) {
+            message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
+            return
+        }
+        guildConfig.setGuildChangeRole(role.guild.id, role.id)
+        message.channel.send("Set the color change role to " + role.name + ". Users with this role will be able to change their color")
+    } else if(cmd.toLowerCase() == "resetchangerole") {
+        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+            message.channel.send("You don't have permission to reset the change role.")
+            return
+        }
+        guildConfig.setGuildChangeRole(message.guild.id, null)
+        message.channel.send("Reset the color change role. All users will be able to change their color")
     } else if (cmd.toLowerCase() == "available") {
         const preapproved = (await guildConfig.getGuildConfig(message.guild.id)).preapprovedColors
         const aliases = (await colorAlias.getColorAliases(message.guild.id)).filter(it => preapproved.filter(pre => pre.hexColor() == it.color.hexColor()).length > 0)

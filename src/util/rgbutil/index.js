@@ -59,4 +59,3 @@ class RGBColorImpl {
 
 
 module.exports = hexToRgb
-export default hexToRgb
