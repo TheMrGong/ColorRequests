@@ -13,7 +13,7 @@ const roleStore = require("../../colorroles/rolestore")
 
 const CONFIG_PERM = "MANAGE_ROLES_OR_PERMISSIONS"
 
-const GONGO = "192813299409223682"
+const GONGO = "712789814839083020"
 
 /**
 * 
@@ -87,9 +87,9 @@ module.exports = async (message) => {
         }
         guildConfig.setGuildAcceptRole(role.guild.id, role.id)
         message.channel.send("Set the accept role to " + role.name + ". Users with this role will be able to accept color change requests.")
-    } else if(cmd.toLowerCase() == "setchangerole") {
+    } else if(cmd.toLowerCase() == "addchangerole") {
         if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
-            message.channel.send("You don't have permission to set the change role.")
+            message.channel.send("You don't have permission to add a change role.")
             return
         }
         let role;
@@ -101,14 +101,36 @@ module.exports = async (message) => {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
             return
         }
-        guildConfig.setGuildChangeRole(role.guild.id, role.id)
-        message.channel.send("Set the color change role to " + role.name + ". Users with this role will be able to change their color")
-    } else if(cmd.toLowerCase() == "resetchangerole") {
+        if(await guildConfig.addChangeRole(role.guild.id, role.id)) {
+            message.channel.send("Added color change role " + role.name + ". Users with this role will be able to change their color")
+        } else {
+            message.channel.send("Already have color change role " + role.name)
+        }
+    } else if(cmd.toLowerCase() == "removechangerole") {
         if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
-            message.channel.send("You don't have permission to reset the change role.")
+            message.channel.send("You don't have permission to remove a change role.")
             return
         }
-        guildConfig.setGuildChangeRole(message.guild.id, null)
+        let role;
+
+        const mentionedRoles = message.mentions.roles.array()
+        if (mentionedRoles.length > 0) role = mentionedRoles[0]
+        else if (args.length > 0) role = message.guild.roles.get(args[0])
+        if (!role) {
+            message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
+            return
+        }
+        if(await guildConfig.removeChangeRole(role.guild.id, role.id)) {
+            message.channel.send("Removed color change role " + role.name + ".")
+        } else {
+            message.channel.send("Don't already have color change role " + role.name)
+        }
+    } else if(cmd.toLowerCase() == "resetchangerole") {
+        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+            message.channel.send("You don't have permission to reset change roles.")
+            return
+        }
+        guildConfig.resetChangeRoles(message.guild.id)
         message.channel.send("Reset the color change role. All users will be able to change their color")
     } else if (cmd.toLowerCase() == "available") {
         const preapproved = (await guildConfig.getGuildConfig(message.guild.id)).preapprovedColors

@@ -14,7 +14,7 @@ const DEFAULT_PERMISSION = "MANAGE_ROLES_OR_PERMISSIONS"
  * @typedef GuildConfig
  * @property {string|null} requestChannelId 
  * @property {string|null} acceptingRoleId
- * @property {string|null} colorChangePermRoleId
+ * @property {string[]} acceptedChangeRoles
  * @property {rgbUtil.RGBColor[]} preapprovedColors
  */
 
@@ -24,7 +24,7 @@ const DEFAULT_PERMISSION = "MANAGE_ROLES_OR_PERMISSIONS"
  * @returns {Promise<boolean>}
  */
 async function memberHasPermissionToAccept(guildMember) {
-    if (await memberHasAcceptRole(guildMember)) return
+    if (await memberHasAcceptRole(guildMember)) return true
     return guildMember.hasPermission(DEFAULT_PERMISSION)
 }
 
@@ -34,8 +34,9 @@ async function memberHasPermissionToAccept(guildMember) {
  */
 async function memberHasAcceptRole(guildMember) {
     const config = await getGuildConfig(guildMember.guild.id)
-    if (!config.acceptingRoleId)  // guild has no defined role for accepting, nobody can have this role
+    if (!config.acceptingRoleId) { // guild has no defined role for accepting, nobody can have this role
         return false
+    }
     const foundRole = guildMember.guild.roles.get(config.acceptingRoleId)
     if (!foundRole) { // the role being used was deleted from the guild
         setGuildAcceptRole(guildMember.guild.id, null) // invalidate role on the config
@@ -50,13 +51,20 @@ async function memberHasAcceptRole(guildMember) {
  */
 async function memberCanChangeColor(guildMember) {
     const config = await getGuildConfig(guildMember.guild.id)
-    if(!config.colorChangePermRoleId) return true
-    const foundRole = guildMember.guild.roles.get(config.colorChangePermRoleId)
-    if(!foundRole) {
-        setGuildChangeRole(guildMember.guild.id, null)
+    if(config.acceptedChangeRoles.length == 0) {
         return true
     }
-    return guildMember.roles.has(foundRole.id)
+    for(const roleId of config.acceptedChangeRoles) {
+        if(!guildMember.guild.roles.get(roleId)) {
+            await removeChangeRole(guildMember.guild.id, roleId)
+        } else if(guildMember.roles.has(roleId)) {
+            return true
+        }
+    }
+    console.log("guild member " + guildMember.user.username+" couldn't change their color role, roles: " + guildMember.roles.keyArray().join(", "))
+    console.log("accepted change roles: " + config.acceptedChangeRoles.join(", "))
+    
+    return false
 }
 
 /**
@@ -98,13 +106,47 @@ async function setGuildAcceptRole(guildId, acceptingRoleId) {
 /**
  * 
  * @param {string} guildId 
+ */
+async function resetChangeRoles(guildId) {
+    const guildConfig = await getGuildConfig(guildId)
+    guildConfig.acceptedChangeRoles = []
+    await db.resetChangeRoles(guildId)
+}
+
+/**
+ * 
+ * @param {string} guildId 
+ * @param {string} changeRoleId
+ */
+async function addChangeRole(guildId, changeRoleId) {
+    const guildConfig = await getGuildConfig(guildId)
+    const index = guildConfig.acceptedChangeRoles.indexOf(changeRoleId)
+
+    if(index == -1) {
+        guildConfig.acceptedChangeRoles.push(changeRoleId)
+        await db.addChangeRole(guildId, changeRoleId)
+        return true
+    }
+    return false
+}
+
+/**
+ * 
+ * @param {string} guildId 
  * @param {string} changeRoleId 
  */
-async function setGuildChangeRole(guildId, changeRoleId) {
+async function removeChangeRole(guildId, changeRoleId) {
     const guildConfig = await getGuildConfig(guildId)
-    guildConfig.colorChangePermRoleId = changeRoleId
-    await db.setGuildChangeRoleId(guildId, changeRoleId)
+    const index = guildConfig.acceptedChangeRoles.indexOf(changeRoleId)
+
+    if(index != -1) {
+        guildConfig.acceptedChangeRoles.splice(index)
+        await db.removeChangeRole(guildId, changeRoleId)
+        return true
+    }
+    return false
 }
+
 
 /**
  * @param {string} guildId 
@@ -149,7 +191,9 @@ async function setup(client) {
 module.exports = {
     getGuildConfig,
     setGuildAcceptRole,
-    setGuildChangeRole,
+    addChangeRole,
+    removeChangeRole,
+    resetChangeRoles,
     setGuildRequestChannel,
     memberHasPermissionToAccept,
     memberHasAcceptRole,
