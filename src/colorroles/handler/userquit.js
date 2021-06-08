@@ -8,7 +8,7 @@ const groupRolesAPI = require("../../groupedroles")
 
 
 /**
- * @param {Discord.GuildMember} memberLeft
+ * @param {Discord.GuildMember | Discord.PartialGuildMember} memberLeft
  */
 module.exports = async (memberLeft) => {
     const userRole = await roleStore.getColorRole(memberLeft.guild.id, memberLeft.user.id)

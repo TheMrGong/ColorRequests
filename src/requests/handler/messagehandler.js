@@ -11,7 +11,7 @@ const colorAlias = require("../../guildconfig/coloralias/coloraliasapi")
 const requestImages = require("../requestimages")
 const roleStore = require("../../colorroles/rolestore")
 
-const CONFIG_PERM = "MANAGE_ROLES_OR_PERMISSIONS"
+const CONFIG_PERM = "MANAGE_ROLES"
 
 const GONGO = "712789814839083020"
 
@@ -36,7 +36,7 @@ module.exports = async (message) => {
     }
 
     let member = message.member
-    if (!member) member = await message.guild.fetchMember(message.author)
+    if (!member) member = await message.guild.members.fetch(message.author)
 
     if (cmd.toLowerCase() == "colorrequest") {
         if (args.length == 0) {
@@ -80,7 +80,7 @@ module.exports = async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.get(args[0])
+        else if (args.length > 0) role = message.guild.roles.cache.get(args[0])
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setacceptrole <@Mods | 481910962291736576>")
             return
@@ -96,7 +96,7 @@ module.exports = async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.get(args[0])
+        else if (args.length > 0) role = message.guild.roles.cache.get(args[0])
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
             return
@@ -115,7 +115,7 @@ module.exports = async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.get(args[0])
+        else if (args.length > 0) role = message.guild.roles.cache.get(args[0])
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
             return
@@ -140,7 +140,7 @@ module.exports = async (message) => {
             return undefined
         })
         if (!image) message.channel.send("Error generating image!")
-        else message.channel.send(new Discord.Attachment(image, "help.gif"))
+        else message.channel.send(new Discord.MessageAttachment(image, "help.gif"))
     } else if (cmd.toLowerCase() == "cleanup") {
         if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to cleanup the server")
@@ -154,7 +154,7 @@ module.exports = async (message) => {
         /**@type {Object.<string, ColorRole[]>} */
         let sameColor = {}
         for (let colorRole of colorRoles) {
-            const role = message.guild.roles.get(colorRole.roleId)
+            const role = message.guild.roles.cache.get(colorRole.roleId)
             if (!role) continue
             const colors = sameColor[role.hexColor] || (sameColor[role.hexColor] = [])
             colors.push(colorRole)

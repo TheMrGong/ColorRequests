@@ -17,12 +17,14 @@ async function handleDeletion(guildId, ...colorRequests) {
 }
 
 /**
- * @param {Discord.Message|Discord.Collection<string, Discord.Message>|Discord.Channel} deleted
+ * @param {Discord.Message | Discord.PartialMessage | Discord.Collection<string, Discord.Message | Discord.PartialMessage> | Discord.Channel | Discord.PartialChannelData} deleted
  */
 module.exports = async function (deleted) {
     let deleting = []
 
     let guildId;
+
+    
     if (deleted instanceof Discord.Message) {
         const colorRequest = await requestStore.findRequestByMessage(deleted)
         if (colorRequest) deleting.push(colorRequest)
@@ -40,6 +42,6 @@ module.exports = async function (deleted) {
             }
             guildId = deleted.first().guild.id
         }
-    } else return
+    } else throw new Error(`Unknown event with deleted type: ${deleted}`)
     if (deleting.length > 0) handleDeletion(guildId, ...deleting)
 }

@@ -22,11 +22,11 @@ class DepHandleLossRole {
 }
 
 const makeHandleLossRole_: (dependencies: DepHandleLossRole) => typeof handleLossRole_
-const handleLossRole_: (member: import("discord.js").GuildMember, lossRoles: import('discord.js').Role[]) => Promise<void>
+const handleLossRole_: (member: import("discord.js").GuildMember | import("discord.js").PartialGuildMember, lossRoles: import('discord.js').Role[]) => Promise<void>
 
 class DepFindGroupRoles {
     getGroupedRole: typeof getGroupedRole_
 }
 
 const makeFindGroupRoles_: (dependencies: DepFindGroupRoles) => typeof findGroupRoles_
-const findGroupRoles_: (member: import("discord.js").GuildMember) => Promise<import("discord.js").Role[]>
+const findGroupRoles_: (member: import("discord.js").GuildMember | import("discord.js").PartialGuildMember) => Promise<import("discord.js").Role[]>

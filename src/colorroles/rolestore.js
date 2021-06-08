@@ -29,7 +29,7 @@ async function getColorRoles(guildId) {
  * @returns {Promise<ColorRole[]>}
  */
 async function filterValidRoles(guildId, roles) {
-    const guild = client.guilds.get(guildId)
+    const guild = client.guilds.cache.get(guildId)
     if (!guild) return []
 
     const invalidRoles = [] // roles to invalidate [remove from database]
@@ -38,16 +38,16 @@ async function filterValidRoles(guildId, roles) {
     for (let k in roles) {
         const role = roles[k]
 
-        const guildRole = guild.roles.get(role.roleId)
+        const guildRole = guild.roles.cache.get(role.roleId)
         if (!guildRole) {
             invalidRoles.push(role)
             continue
         }
 
-        const user = await client.fetchUser(role.roleOwner)
+        const user = await client.users.fetch(role.roleOwner)
         try {
-            const member = await guild.fetchMember(user)
-            if (!member.roles.has(guildRole.id)) {
+            const member = await guild.members.fetch(user)
+            if (!member.roles.cache.has(guildRole.id)) {
                 console.log("Found user that no longer has their role " + guildId)
                 invalidRoles.push(role)
 
@@ -94,12 +94,12 @@ async function getColorRole(guildId, userId) {
  * @returns {Promise<ColorRole[]>}
  */
 async function getRolesWithColor(guildId, color) {
-    const guild = client.guilds.get(guildId)
+    const guild = client.guilds.cache.get(guildId)
     if (!guild) return []
     const colorCompare = color.toLowerCase()
 
     return (await getColorRoles(guildId)).filter(colorRole => {
-        const role = guild.roles.get(colorRole.roleId)
+        const role = guild.roles.cache.get(colorRole.roleId)
         if (!role) return false
         const roleColor = role.hexColor.substring(1, role.hexColor.length)
 

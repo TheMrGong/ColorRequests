@@ -17,15 +17,18 @@ export default function makeCreateGroupedRole({ addGroupedRole, client }) {
      * @returns {Promise<import("discord.js").Role>}
      */
     async function createGroupedRole(guildId, roleColor, roleName) {
-        const guild = client.guilds.get(guildId)
+        const guild = client.guilds.cache.get(guildId)
         if (!guild) throw new Error("Couldn't find guild!")
-        const role = await guild.createRole({
-            color: roleColor.hexColor(),
-            hoist: false,
-            mentionable: false,
-            permissions: 0,
-            name: roleName,
-            position: 1
+        const role = await guild.roles.create({
+            data: {
+                color: roleColor.hexColor(),
+                hoist: false,
+                mentionable: false,
+                permissions: 0,
+                name: roleName,
+                position: 1
+            },
+            reason: "Creating groupped role"
         })
         await addGroupedRole(guildId, {
             roleColor: roleColor.hexColor(),

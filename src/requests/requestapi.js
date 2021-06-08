@@ -34,7 +34,7 @@ async function createNewRequest(requestingMessage, requestingColor) {
         requestChannelToUse = requestingMessage.channel
     }
     else { // make sure the channel set in config still exists
-        const foundChannel = requestingMessage.guild.channels.get(configChannel)
+        const foundChannel = requestingMessage.guild.channels.cache.get(configChannel)
         if (foundChannel instanceof Discord.TextChannel) requestChannelToUse = foundChannel
         else { // config is set to a channel that has been removed
             //@ts-ignore
@@ -45,7 +45,7 @@ async function createNewRequest(requestingMessage, requestingColor) {
         }
     }
     let member = requestingMessage.member
-    if (!member) member = await requestingMessage.guild.fetchMember(requestingMessage.author)
+    if (!member) member = await requestingMessage.guild.members.fetch(requestingMessage.author)
 
     const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, requestingMessage.author.id)
 
@@ -67,12 +67,12 @@ async function doAccept(requestingMessage, member, color) {
 
     const oldGroupRoles = (await findGroupRoles(member)).filter(it => !groupRoleForColor || it.id != groupRoleForColor.getRoleId())
     if (oldGroupRoles.length > 0) {
-        await member.removeRoles(oldGroupRoles)
+        await member.roles.remove(oldGroupRoles)
         await handleLossRole(member, oldGroupRoles)
     }
 
     const giveGroupRole = async () => {
-        const groupRole = groupRoleForColor && requestingMessage.guild.roles.get(groupRoleForColor.getRoleId())
+        const groupRole = groupRoleForColor && requestingMessage.guild.roles.cache.get(groupRoleForColor.getRoleId())
         if (!groupRole) {
 
             requestingMessage.channel.send("Unable to grant you the role, couldn't find grouped role?")
@@ -81,7 +81,7 @@ async function doAccept(requestingMessage, member, color) {
         }
         if (existingRole)
             await roleApi.removeColorRole(member.guild.id, member.user.id)
-        await member.addRole(groupRole)
+        await member.roles.add(groupRole)
         return true
     }
 
@@ -95,14 +95,14 @@ async function doAccept(requestingMessage, member, color) {
         } else {
             const groupRole = await mergeSameColorRoles(requestingMessage.guild, rolesWithColor, color)
             const highestColorCurrently = discordUtil.findHighestColorPriority(member) + 1
-            if (groupRole.calculatedPosition < highestColorCurrently) {
+            if (groupRole.position < highestColorCurrently) {
                 try {
-                    groupRole.setPosition(highestColorCurrently, false)
+                    groupRole.setPosition(highestColorCurrently, { relative: false })
                 } catch (e) {
                     console.error("Unable to change group role to match " + member.displayName + "'s highest color", e)
                 }
             }
-            await member.addRole(groupRole)
+            await member.roles.add(groupRole)
         }
         return true
     }
@@ -136,7 +136,7 @@ async function mergeSameColorRoles(guild, sameRoles, color) {
     const existingGroupedRole = await findGroupedRole(guild.id, color.hexColor())
     let role;
     if (existingGroupedRole)
-        role = guild.roles.get(existingGroupedRole.getRoleId())
+        role = guild.roles.cache.get(existingGroupedRole.getRoleId())
     if (!role) role = await createGroupedRole(guild.id, color, name)
 
     let highestPosition = 0
@@ -144,11 +144,11 @@ async function mergeSameColorRoles(guild, sameRoles, color) {
     await roleApi.removeMultipleColorRoles(guild.id, ...sameRoles)
     for (let colorRole of sameRoles) {
         try {
-            const owner = await guild.fetchMember(colorRole.roleOwner)
+            const owner = await guild.members.fetch(colorRole.roleOwner)
             const highestPriority = discordUtil.findHighestColorPriority(owner)
             if (highestPriority > highestPosition)
                 highestPosition = highestPriority
-            await owner.addRole(role)
+            await owner.roles.add(role)
         } catch (e) {
             console.warn("Unable to give color role for " + colorRole.roleOwner, e)
         }
@@ -156,7 +156,7 @@ async function mergeSameColorRoles(guild, sameRoles, color) {
 
     if (highestPosition != 0) {
         try {
-            role = await role.setPosition(highestPosition + 1, false)
+            role = await role.setPosition(highestPosition + 1, { relative: false })
         } catch (e) {
             console.warn("Failed to update group role position", e)
         }
@@ -173,8 +173,8 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
     await requestStore.removeRequest(requestingMessage.guild.id, colorRequest.requester)
     await requestingMessage.delete()
 
-    const user = await requestingMessage.client.fetchUser(colorRequest.requester)
-    const member = await requestingMessage.guild.fetchMember(user)
+    const user = await requestingMessage.client.users.fetch(colorRequest.requester)
+    const member = await requestingMessage.guild.members.fetch(user)
 
 
     if (accepting) {
@@ -192,11 +192,11 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
 async function handleNewRequest(requestingMessage, requestingColor) {
     try {
         let member = requestingMessage.member
-        if (!member) member = await requestingMessage.guild.fetchMember(requestingMessage.author)
+        if (!member) member = await requestingMessage.guild.members.fetch(requestingMessage.author)
 
         if(!(await guildConfigs.memberCanChangeColor(member))) {
             const changeRoles = (await guildConfigs.getGuildConfig(member.guild.id)).acceptedChangeRoles
-            .map(roleId => member.guild.roles.get(roleId))
+            .map(roleId => member.guild.roles.cache.get(roleId))
             .filter(it => it !== undefined)
             .map(it => it.name)
             .join(", ")
@@ -246,8 +246,8 @@ async function handleCancel(message, colorRequest) {
  * @returns {Promise<Discord.Message>}
  */
 async function generateRequestMessage(channel, requester, requestingColor) {
-    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL, "#" + requestingColor.hexColor())
-    const message = await channel.send(new Discord.Attachment(image, "display.gif"))
+    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL(), "#" + requestingColor.hexColor())
+    const message = await channel.send(new Discord.MessageAttachment(image, "display.gif"))
 
     if (message instanceof Discord.Message) {
         message.react(ACCEPT_EMOJI).then(() => message.react(DECLINE_EMOJI))
@@ -264,8 +264,8 @@ async function generateRequestMessage(channel, requester, requestingColor) {
  * @returns {Promise<Discord.Message>}
  */
 async function generateEditMessage(channel, requester, changingColor) {
-    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL, "#" + changingColor.hexColor())
-    const message = await channel.send(new Discord.Attachment(image, "display.gif"))
+    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL(), "#" + changingColor.hexColor())
+    const message = await channel.send(new Discord.MessageAttachment(image, "display.gif"))
 
     if (message instanceof Discord.Message) {
         message.react(ACCEPT_EMOJI).then(() => message.react(DECLINE_EMOJI))
@@ -289,7 +289,7 @@ async function setup(client) {
     client.on("messageDeleteBulk", deletionHandler)
     client.on("channelDelete", deletionHandler)
 
-    const guilds = client.guilds.array()
+    const guilds = client.guilds.cache.array()
     for (let k in guilds) // pre-cache all current guilds
         await requestStore.getGuildPending(guilds[k].id)
     //@ts-ignore

@@ -8,7 +8,7 @@ const db = require("./guildconfigdb")
 
 const rgbUtil = require("../util/rgbutil")
 
-const DEFAULT_PERMISSION = "MANAGE_ROLES_OR_PERMISSIONS"
+const DEFAULT_PERMISSION = "MANAGE_ROLES"
 
 /**
  * @typedef GuildConfig
@@ -25,7 +25,7 @@ const DEFAULT_PERMISSION = "MANAGE_ROLES_OR_PERMISSIONS"
  */
 async function memberHasPermissionToAccept(guildMember) {
     if (await memberHasAcceptRole(guildMember)) return true
-    return guildMember.hasPermission(DEFAULT_PERMISSION)
+    return guildMember.permissions.has(DEFAULT_PERMISSION)
 }
 
 /**
@@ -37,12 +37,12 @@ async function memberHasAcceptRole(guildMember) {
     if (!config.acceptingRoleId) { // guild has no defined role for accepting, nobody can have this role
         return false
     }
-    const foundRole = guildMember.guild.roles.get(config.acceptingRoleId)
+    const foundRole = guildMember.guild.roles.cache.get(config.acceptingRoleId)
     if (!foundRole) { // the role being used was deleted from the guild
         setGuildAcceptRole(guildMember.guild.id, null) // invalidate role on the config
         return false // no role exists now
     }
-    return guildMember.roles.has(foundRole.id)
+    return guildMember.roles.cache.get(foundRole.id)
 }
 
 /**
@@ -55,13 +55,13 @@ async function memberCanChangeColor(guildMember) {
         return true
     }
     for(const roleId of config.acceptedChangeRoles) {
-        if(!guildMember.guild.roles.get(roleId)) {
+        if(!guildMember.guild.roles.cache.get(roleId)) {
             await removeChangeRole(guildMember.guild.id, roleId)
-        } else if(guildMember.roles.has(roleId)) {
+        } else if(guildMember.roles.cache.get(roleId)) {
             return true
         }
     }
-    console.log("guild member " + guildMember.user.username+" couldn't change their color role, roles: " + guildMember.roles.keyArray().join(", "))
+    console.log("guild member " + guildMember.user.username+" couldn't change their color role, roles: " + guildMember.roles.cache.keyArray().join(", "))
     console.log("accepted change roles: " + config.acceptedChangeRoles.join(", "))
     
     return false

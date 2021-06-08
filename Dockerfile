@@ -1,5 +1,5 @@
 FROM ampervue/ffmpeg
-FROM node:10.9.0
+FROM node:12
 
 COPY --from=0 / /
 

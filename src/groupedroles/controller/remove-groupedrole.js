@@ -17,12 +17,12 @@ export default function makeRemoveGroupedRole({ deleteGroupedRole, client }) {
      */
     async function removeGroupedRole(guildId, roleId) {
 
-        const guild = client.guilds.get(guildId)
+        const guild = client.guilds.cache.get(guildId)
         if (!guild) throw new Error("Unable to find guild!")
 
         const removed = await deleteGroupedRole(guildId, roleId)
         if (!removed) return
-        const role = guild.roles.get(roleId)
+        const role = guild.roles.cache.get(roleId)
         if (role) {
             if (!removed.isDeleting()) {
                 removed.setDeleting(true)

@@ -10,7 +10,7 @@ const guildConfig = require("../../guildconfig/guildconfigs")
 /**
  * 
  * @param {Discord.MessageReaction} reaction 
- * @param {Discord.User} user 
+ * @param {Discord.User | Discord.PartialUser} user 
  */
 module.exports = async (reaction, user) => {
     const accepting = reaction.emoji.toString() == requestApi.ACCEPT_EMOJI
@@ -21,7 +21,7 @@ module.exports = async (reaction, user) => {
     const colorRequest = await requestStore.findRequestByMessage(reaction.message)
     if (!colorRequest) return // no associated color request to this message
 
-    const member = await reaction.message.guild.fetchMember(user)
+    const member = await reaction.message.guild.members.fetch(user.id)
 
     if (user.id == colorRequest.requester && !accepting) // allow user to cancel their own color request
         requestApi.handleCancel(reaction.message, colorRequest)
