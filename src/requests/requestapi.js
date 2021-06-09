@@ -67,6 +67,15 @@ async function createNewRequest(requestingMessage, requestingColor) {
  */
 async function doAccept(requestingMessage, member, color) {
     const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, member.user.id)
+
+    // check if they're trying to change their color to same one
+    if(existingRole) {
+        const role = await member.guild.roles.fetch(existingRole.roleId)
+        if(role && role.hexColor.substring(1) === color.hexColor()) {
+            return false
+        }
+    }
+
     const groupRoleForColor = await findGroupedRole(requestingMessage.guild.id, color.hexColor())
 
     const oldGroupRoles = (await findGroupRoles(member)).filter(it => !groupRoleForColor || it.id != groupRoleForColor.getRoleId())
