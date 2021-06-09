@@ -33,9 +33,9 @@ RUN npm install -g pnpm
 RUN pnpm install -g pnpm
 
 COPY ./package.json /usr/src/app
-COPY ./yarn.lock /usr/src/app
+COPY ./pnpm-lock.yaml /usr/src/app
 
 RUN pnpm install
 COPY . /usr/src/app
 
-CMD ["yarn", "start"]
+CMD ["pnpm", "start"]

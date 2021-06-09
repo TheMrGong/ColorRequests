@@ -7,7 +7,7 @@
     "prebuild": "rimraf dist",
     "build": "babel src -d dist",
     "dev": "export APP_ROOT=$PWD && nodemon --exec babel-node ./src/index.js",
-    "start": "export APP_ROOT=$PWD && yarn run build&& cd dist&& node index.js"
+    "start": "export APP_ROOT=$PWD && pnpm run build&& cd dist&& node index.js"
   },
   "repository": {
     "type": "git",
