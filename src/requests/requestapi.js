@@ -19,6 +19,7 @@ import { createGroupedRole, findGroupedRole, removeGroupedRole, findGroupRoles, 
 import reactionHandler from "./handler/reactionhandler"
 import messageHandler from "./handler/messagehandler"
 import deletionHandler from "./handler/deletionhandler"
+import interactionHandler from "./handler/interactionhandler"
 
 const ACCEPT_EMOJI = "✅"
 const DECLINE_EMOJI = "⛔"
@@ -292,6 +293,7 @@ async function setup(client) {
     client.on("messageDelete", deletionHandler)
     client.on("messageDeleteBulk", deletionHandler)
     client.on("channelDelete", deletionHandler)
+    client.on("interaction", interactionHandler)
 
     const guilds = client.guilds.cache.array()
     for (let k in guilds) // pre-cache all current guilds

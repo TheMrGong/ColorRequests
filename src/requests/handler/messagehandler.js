@@ -161,6 +161,52 @@ export default async (message) => {
         })
         if (!image) message.channel.send("Error generating image!")
         else message.channel.send(new Discord.MessageAttachment(image, "help.gif"))
+    } else if (cmd.toLowerCase() == "pick") {
+        if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
+            message.channel.send("You don't have permission to generate pickables")
+            return
+        }
+        const preapproved = (await guildConfig.getGuildConfig(message.guild.id)).preapprovedColors
+        const aliases = (await colorAlias.getColorAliases(message.guild.id)).filter(it => preapproved.filter(pre => pre.hexColor() == it.color.hexColor()).length > 0)
+        const image = await requestImages.generateAliasHelp(message.guild, aliases).catch(e => {
+            console.error("Error generating alias help", e)
+            return undefined
+        })
+        if (!image) message.channel.send("Error generating image!")
+        else {
+            /**@type {Discord.MessageActionRowOptions[]} */
+            const components = []
+
+            /**@type {Discord.MessageActionRowComponentResolvable[]} */
+            let currentRow = []
+
+            aliases.forEach((alias) => {
+                currentRow.push({
+                    type: `BUTTON`,
+                    customID: `color;${alias.name}`,
+                    label: formatCaps(alias.name.replace(`-`, ` `)),
+                    style: `SECONDARY`
+                })
+                if(currentRow.length >= 5) {
+                    components.push({
+                        type: `ACTION_ROW`,
+                        components: currentRow
+                    })
+                    currentRow = []
+                }
+            });
+            if(currentRow.length > 0) {
+                components.push({
+                    type: `ACTION_ROW`,
+                    components: currentRow
+                })
+            }
+            await message.channel.send(new Discord.MessageAttachment(image, "help.gif"))
+            await message.channel.send({
+                content: `To get your own color, click a button below`,
+                components
+            })
+        }
     } else if (cmd.toLowerCase() == "cleanup") {
         if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to cleanup the server")
