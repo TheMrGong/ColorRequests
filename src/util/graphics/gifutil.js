@@ -2,7 +2,7 @@
 
 const canvasAPI = require("canvas")
 const sharp = require("sharp")
-const request = require("snekfetch")
+import request from "node-fetch"
 const gifFrames = require("gif-frames")
 const { FrameInfo } = require("./animatorutil")
 
@@ -81,14 +81,15 @@ async function createURLImageDrawer(url, imageConfig) {
     if (imageConfig.width !== undefined && imageConfig.height === undefined)
         imageConfig.height = imageConfig.width
 
-
     if (url.endsWith(".gif")) {
         return await createGifDrawer(await getGifFramesCorrectly(url), imageConfig)
     } else {
-        let profileImageBuffer = (await request.get(url)).body
+        let profileImageBuffer = await (await request(url)).buffer()
 
         //@ts-ignore
-        if (imageConfig.width !== undefined) profileImageBuffer = await sharp(profileImageBuffer).resize(imageConfig.width, imageConfig.height).toBuffer()
+        if (imageConfig.width !== undefined) {
+            profileImageBuffer = await sharp(profileImageBuffer).resize(imageConfig.width, imageConfig.height).toBuffer()
+        }
 
         if (!(profileImageBuffer instanceof Buffer)) throw "Not a buffer?"
         const response = {

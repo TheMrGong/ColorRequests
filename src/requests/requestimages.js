@@ -80,7 +80,9 @@ async function generateAliasHelp(guild, aliases) {
     const getHue = (alias) => hsv(alias.color.r, alias.color.g, alias.color.b)[0]
     aliases = aliases.sort((a, b) => getHue(a) - getHue(b))
     const guildIconSize = 48
-    const guildIconDrawer = guild.iconURL() ? await gifUtil.createURLImageDrawer(guild.iconURL(), {
+    const guildIconDrawer = guild.iconURL({format: `png`}) ? await gifUtil.createURLImageDrawer(guild.iconURL({
+        format: `png`
+    }), {
         width: guildIconSize
     }) : null
 
