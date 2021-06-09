@@ -212,9 +212,14 @@ async function handleNewRequest(requestingMessage, requestingColor) {
         if (hasAcceptRole || isPreapproved) {
             const result = await doAccept(requestingMessage, member, requestingColor)
             if(result === undefined) return
-            if (result)
+            if (result) {
+                console.log(`[!] Created new role for ${member.user.username}`)
                 await requestingMessage.sendMessage("Gave you a new role, enjoy your color " + member.user.toString() + "!")
-            else await requestingMessage.sendMessage("Updated your color, enjoy " + member.user.toString() + "!")
+            }
+            else {
+                console.log(`[~] Updated color for ${member.user.username}`)
+                await requestingMessage.sendMessage("Updated your color, enjoy " + member.user.toString() + "!")
+            }
 
             return
         }
