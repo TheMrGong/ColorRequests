@@ -3,12 +3,13 @@
 //@ts-check
 
 import Discord from "discord.js"
+import bot from "../../bot"
 
 /**
  * @param {DepCreateGroupedRole} param 
  * @returns {typeof createGroupedRole_}
  */
-export default function makeCreateGroupedRole({ addGroupedRole, client }) {
+export default function makeCreateGroupedRole({ addGroupedRole }) {
 
     return createGroupedRole
     /**
@@ -19,7 +20,7 @@ export default function makeCreateGroupedRole({ addGroupedRole, client }) {
      * @returns {Promise<import("discord.js").Role>}
      */
     async function createGroupedRole(guildId, roleColor, roleName) {
-        const guild = client.guilds.cache.get(guildId)
+        const guild = bot.client.guilds.cache.get(guildId)
         if (!guild) throw new Error("Couldn't find guild!")
         const role = await guild.roles.create({
             color: roleColor.hexColor(),

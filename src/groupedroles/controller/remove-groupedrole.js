@@ -4,11 +4,13 @@
 
 import Discord from "discord.js"
 
+import bot from "../../bot"
+
 /**
  * @param {DepRemoveGroupedRole} param 
  * @returns {typeof removeGroupedRole_}
  */
-export default function makeRemoveGroupedRole({ deleteGroupedRole, client }) {
+export default function makeRemoveGroupedRole({ deleteGroupedRole }) {
 
     return removeGroupedRole
     /**
@@ -18,20 +20,19 @@ export default function makeRemoveGroupedRole({ deleteGroupedRole, client }) {
      * @returns {Promise<IGroupedRole>}
      */
     async function removeGroupedRole(guildId, roleId) {
-
-        const guild = client.guilds.cache.get(guildId)
+        const guild = bot.client.guilds.cache.get(guildId)
         if (!guild) throw new Error("Unable to find guild!")
 
         const removed = await deleteGroupedRole(guildId, roleId)
         if (!removed) return
-        const role = guild.roles.cache.get(roleId)
+        const role = await guild.roles.fetch(roleId)
         if (role) {
             if (!removed.isDeleting()) {
                 removed.setDeleting(true)
-                role.delete().catch(e => console.warn("Unable to delete role", e))
+                role.delete(`Grouped role being deleted`).catch(e => console.warn("Unable to delete role", e))
             }
         } else {
-            console.warn("Unable to find group role for guild, color#" + removed.getRoleColor())
+            console.warn("Unable to find group role for guild to delete, color#" + removed.getRoleColor().hexColor())
         }
         return removed
     }

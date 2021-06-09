@@ -2,7 +2,7 @@
 
 const Discord = require("discord.js")
 
-import { client } from "../bot"
+import bot from "../bot"
 
 const rgbUtil = require("../util/rgbutil")
 import roleStore from "./rolestore"
@@ -22,9 +22,12 @@ import roleDeleted from "./handler/roledeleted"
  * @param {rgbUtil.RGBColor} roleColor 
  */
 async function createColorRole(guildId, name, userId, roleColor) {
-    const guild = client.guilds.cache.get(guildId)
+    const guild = bot.client.guilds.cache.get(guildId)
     if (!guild) throw "Guild not found"
-    const user = await client.users.fetch(userId)
+
+    // ensure roles are up to date before trying to resort guild roles
+    await guild.roles.fetch()
+    const user = bot.client.users.cache.get(userId)
     const member = await guild.members.fetch(user)
 
     const priortyAbove = discordUtil.findHighestColorPriority(member)
@@ -33,7 +36,6 @@ async function createColorRole(guildId, name, userId, roleColor) {
         color: [roleColor.r, roleColor.g, roleColor.b],
         mentionable: false,
         name,
-        position: 1,
         permissions: [],
         reason: "User color role"
     })
@@ -65,9 +67,9 @@ async function createColorRole(guildId, name, userId, roleColor) {
 async function removeColorRole(guildId, userId) {
     const role = await roleStore.getColorRole(guildId, userId)
     if (role) {
-        const guild = client.guilds.cache.get(guildId)
+        const guild = bot.client.guilds.cache.get(guildId)
         if (!guild) throw "Guild not found"
-        const guildRole = guild.roles.cache.get(role.roleId)
+        const guildRole = await guild.roles.fetch(role.roleId) // fetch since this is important
         if (guildRole && !role.deleting) {
             role.deleting = true
             try {
@@ -88,14 +90,14 @@ async function removeColorRole(guildId, userId) {
  */
 async function removeMultipleColorRoles(guildId, ...roles) {
 
-    const guild = client.guilds.cache.get(guildId)
+    const guild = bot.client.guilds.cache.get(guildId)
     if (!guild)  // guild doesn't exist, role all
         return await roleStore.unregisterMultipleColorRoles(guildId, ...roles.map(it => it.roleOwner))
 
     const toRemove = []
     for (let k in roles) {
         const role = roles[k]
-        const guildRole = await guild.roles.cache.get(role.roleId)
+        const guildRole = await guild.roles.fetch(role.roleId)
         if (guildRole) {
             role.deleting = true
             try {
@@ -118,10 +120,10 @@ async function removeMultipleColorRoles(guildId, ...roles) {
  * @param {rgbUtil.RGBColor} newColor 
  */
 async function changeColorRoleColor(guildId, userId, newColor) {
-    const guild = client.guilds.cache.get(guildId)
+    const guild = bot.client.guilds.cache.get(guildId)
     if (!guild) throw "Guild doesn't exist"
 
-    const user = await client.users.fetch(userId)
+    const user = bot.client.users.cache.get(userId)
     const member = await guild.members.fetch(user)
 
 
@@ -129,7 +131,7 @@ async function changeColorRoleColor(guildId, userId, newColor) {
     if (!role) throw "No existing color role"
 
 
-    const guildRole = guild.roles.cache.get(role.roleId)
+    const guildRole = await guild.roles.fetch(role.roleId)
     if (!guildRole) {
         await roleStore.unregisterColorRole(guildId, userId)
         throw "No guild role associated with color role"
@@ -143,6 +145,8 @@ async function changeColorRoleColor(guildId, userId, newColor) {
 
     if (priortyAbove + 1 > guildRole.position) {
         try {
+            // ensure roles up to date before trying to resort
+            await guildRole.guild.roles.fetch()
             await guildRole.setPosition(priortyAbove + 1)
         } catch (e) {
             console.error("Unable to update old role to use higher position")

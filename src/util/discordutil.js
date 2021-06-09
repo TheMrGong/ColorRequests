@@ -7,6 +7,8 @@ const Discord = require("discord.js")
  * @returns {number}
  */
 function findHighestColorPriority(member) {
+    const highestColor = member.roles.cache.filter(it => it.color != 0).sort((b1, b2) => b2.position - b1.position).first()
+    console.log(`highest color for ${member.user.username} - ${highestColor.name} position ${highestColor.position}`)
     return member.roles.cache.filter(it => it.color != 0).map(it => it.position).sort((b1, b2) => b2 - b1).shift() || 0
 }
 
@@ -111,10 +113,22 @@ class InteractionUserContext extends UserContext {
             content: message
         } : message
         if(this.interaction.isCommand() || this.interaction.isMessageComponent()) {
-            await this.interaction.reply({
-                ...msg,
-                ephemeral: true,
-            })
+            if(this.interaction.deferred) {
+                await this.interaction.editReply({
+                    ...msg,
+                })
+            } else if(this.interaction.replied) {
+                await this.interaction.followUp({
+                    ...msg,
+                    ephemeral: true,
+                })
+            } else {
+                await this.interaction.reply({
+                    ...msg,
+                    ephemeral: true,
+                })
+            }
+            
         }
     }
 }

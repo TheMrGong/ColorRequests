@@ -3,7 +3,7 @@
 const Discord = require("discord.js")
 const rgbUtil = require("../util/rgbutil")
 
-import { client } from "../bot"
+import bot from "../bot"
 const db = require("./requestdb")
 
 import { UserContext } from "../util/discordutil"
@@ -53,7 +53,7 @@ async function getGuildPending(guildId) {
 async function filterValidRequests(guildId, requests) {
 
 
-    const guild = client.guilds.cache.get(guildId)
+    const guild = bot.client.guilds.cache.get(guildId)
 
     if (!guild) { // guild is now gone
         await removeMultipleRequests(guildId, ...requests.map(it => it.requester))

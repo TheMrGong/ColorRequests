@@ -2,7 +2,7 @@
 
 const Discord = require("discord.js")
 
-import { client } from "../bot"
+import bot from "../bot"
 
 const db = require("./roledb")
 
@@ -30,7 +30,7 @@ async function getColorRoles(guildId) {
  * @returns {Promise<ColorRole[]>}
  */
 async function filterValidRoles(guildId, roles) {
-    const guild = client.guilds.cache.get(guildId)
+    const guild = bot.client.guilds.cache.get(guildId)
     if (!guild) return []
 
     const invalidRoles = [] // roles to invalidate [remove from database]
@@ -39,13 +39,14 @@ async function filterValidRoles(guildId, roles) {
     for (let k in roles) {
         const role = roles[k]
 
-        const guildRole = guild.roles.cache.get(role.roleId)
+        const guildRole = await guild.roles.fetch(role.roleId) // fetch since this can sometimes return undefined for existing roles
         if (!guildRole) {
+            console.log(`couldn't find guild role ${role.roleId}, invalid`)
             invalidRoles.push(role)
             continue
         }
 
-        const user = await client.users.fetch(role.roleOwner)
+        const user = await bot.client.users.fetch(role.roleOwner)
         try {
             const member = await guild.members.fetch(user)
             if (!member.roles.cache.has(guildRole.id)) {
@@ -95,7 +96,7 @@ async function getColorRole(guildId, userId) {
  * @returns {Promise<ColorRole[]>}
  */
 async function getRolesWithColor(guildId, color) {
-    const guild = client.guilds.cache.get(guildId)
+    const guild = bot.client.guilds.cache.get(guildId)
     if (!guild) return []
     const colorCompare = color.toLowerCase()
 

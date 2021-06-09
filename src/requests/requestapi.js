@@ -14,7 +14,7 @@ import requestImages from "./requestimages"
 const colorAliases = require("../guildconfig/coloralias/coloraliasapi")
 import discordUtil, { idToFlake, UserContext } from "../util/discordutil"
 
-import { createGroupedRole, findGroupedRole, findGroupRoles, handleLossRole } from "../groupedroles"
+import { createGroupedRole, findGroupedRole, removeGroupedRole, findGroupRoles, handleLossRole } from "../groupedroles"
 
 import reactionHandler from "./handler/reactionhandler"
 import messageHandler from "./handler/messagehandler"
@@ -74,22 +74,20 @@ async function doAccept(requestingMessage, member, color) {
         await handleLossRole(member, oldGroupRoles)
     }
 
-    const giveGroupRole = async () => {
-        const groupRole = groupRoleForColor && requestingMessage.guild.roles.cache.get(groupRoleForColor.getRoleId())
-        if (!groupRole) {
-
-            requestingMessage.sendMessage("Unable to grant you the role, couldn't find grouped role?")
-            console.error("Unable to find group role for " + (groupRoleForColor && groupRoleForColor.getRoleColor()))
-            return false
-        }
-        if (existingRole)
+    if (groupRoleForColor) {
+        const groupRole = await requestingMessage.guild.roles.fetch(groupRoleForColor.getRoleId())
+        if(!groupRole) {
+            await removeGroupedRole(requestingMessage.guild.id, groupRoleForColor.getRoleId())
+            console.log(`Failed to find group role in guild when existed in DB, deleting`)
+        } else {
+            if (existingRole)
             await roleApi.removeColorRole(member.guild.id, member.user.id)
-        await member.roles.add(groupRole)
-        return true
+            await member.roles.add(groupRole)
+            return true
+        }
     }
-
-    if (groupRoleForColor)
-        return giveGroupRole() ? true : undefined
+    // ensure roles are up to date before interacting with roles
+    await member.guild.roles.fetch()
 
     const rolesWithColor = await roleStore.getRolesWithColor(member.guild.id, color.hexColor())
     if (rolesWithColor.length + 1 >= 2) {
@@ -100,7 +98,7 @@ async function doAccept(requestingMessage, member, color) {
             const highestColorCurrently = discordUtil.findHighestColorPriority(member) + 1
             if (groupRole.position < highestColorCurrently) {
                 try {
-                    groupRole.setPosition(highestColorCurrently, { relative: false })
+                    await groupRole.setPosition(highestColorCurrently, { relative: false })
                 } catch (e) {
                     console.error("Unable to change group role to match " + member.displayName + "'s highest color", e)
                 }
@@ -159,6 +157,8 @@ async function mergeSameColorRoles(guild, sameRoles, color) {
 
     if (highestPosition != 0) {
         try {
+            // ensure roles up to date before trying to resort
+            await role.guild.roles.fetch()
             role = await role.setPosition(highestPosition + 1, { relative: false })
         } catch (e) {
             console.warn("Failed to update group role position", e)

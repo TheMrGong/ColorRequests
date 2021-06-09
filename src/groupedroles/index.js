@@ -5,15 +5,12 @@ import makeCreateGroupedRole from "./controller/create-groupedrole"
 import makeRemoveGroupedRole from "./controller/remove-groupedrole"
 import makeHandleLossRole from "./controller/handle-lossrole"
 import makeFindGroupRoles from "./controller/find-grouproles"
-import { client } from "../bot"
 
 const createGroupedRole = makeCreateGroupedRole({
-    addGroupedRole,
-    client
+    addGroupedRole
 })
 const removeGroupedRole = makeRemoveGroupedRole({
-    deleteGroupedRole,
-    client
+    deleteGroupedRole
 })
 const handleLossRole = makeHandleLossRole({
     deleteGroupedRole,

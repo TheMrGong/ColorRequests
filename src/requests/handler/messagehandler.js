@@ -17,6 +17,22 @@ const CONFIG_PERM = "MANAGE_ROLES"
 const GONGO = "712789814839083020"
 
 /**
+ * @param {string} msg 
+ */
+function formatCaps(msg) {
+    const words = msg.split(` `)
+    let finalMsg = ``
+    for(const word of words) {
+        if(word.length <= 1) {
+            finalMsg += word.toUpperCase()
+            continue
+        }
+        finalMsg += word[0].toUpperCase() + word.substring(1).toLowerCase() + ` `
+    }
+    return finalMsg.substring(0, finalMsg.length - 1)
+}
+
+/**
 * @param {Discord.Message} message 
 */
 export default async (message) => {
@@ -84,7 +100,7 @@ export default async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.cache.get(idToFlake(args[0]))
+        else if (args.length > 0) role = await message.guild.roles.fetch(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setacceptrole <@Mods | 481910962291736576>")
             return
@@ -100,7 +116,7 @@ export default async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.cache.get(idToFlake(args[0]))
+        else if (args.length > 0) role = await message.guild.roles.fetch(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
             return
@@ -119,7 +135,7 @@ export default async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.cache.get(idToFlake(args[0]))
+        else if (args.length > 0) role = await message.guild.roles.fetch(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
             return
@@ -158,7 +174,7 @@ export default async (message) => {
         /**@type {Object.<string, ColorRole[]>} */
         let sameColor = {}
         for (let colorRole of colorRoles) {
-            const role = message.guild.roles.cache.get(colorRole.roleId)
+            const role = await message.guild.roles.fetch(colorRole.roleId)
             if (!role) continue
             const colors = sameColor[role.hexColor] || (sameColor[role.hexColor] = [])
             colors.push(colorRole)

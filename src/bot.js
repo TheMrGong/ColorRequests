@@ -7,8 +7,8 @@ import guildConfigs from "./guildconfig/guildconfigs"
 import requestApi from "./requests/requestapi"
 import roleApi from "./colorroles/roleapi"
 
-export const client = new Discord.Client({
-    intents: [`GUILDS`, `GUILD_MESSAGES`]
+const client = new Discord.Client({
+    intents: [`GUILDS`, `GUILD_MESSAGES`, `GUILD_MEMBERS`]
 })
 
 async function start() {

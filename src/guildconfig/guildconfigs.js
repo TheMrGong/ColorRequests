@@ -37,7 +37,7 @@ async function memberHasAcceptRole(guildMember) {
     if (!config.acceptingRoleId) { // guild has no defined role for accepting, nobody can have this role
         return false
     }
-    const foundRole = guildMember.guild.roles.cache.get(config.acceptingRoleId)
+    const foundRole = await guildMember.guild.roles.fetch(config.acceptingRoleId)
     if (!foundRole) { // the role being used was deleted from the guild
         setGuildAcceptRole(guildMember.guild.id, null) // invalidate role on the config
         return false // no role exists now

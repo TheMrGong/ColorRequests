@@ -1,7 +1,6 @@
 
 class DepCreateGroupedRole {
     addGroupedRole: typeof addGroupedRole_
-    client: import("discord.js").Client
 }
 
 const makeCreateGroupedRole_: (dependencies: DepCreateGroupedRole) => typeof createGroupedRole_
@@ -10,7 +9,6 @@ const createGroupedRole_: (guildId: `${bigint}`, roleColor: RGBColor, roleName: 
 
 class DepRemoveGroupedRole {
     deleteGroupedRole: typeof deleteGroupedRole_
-    client: import("discord.js").Client
 }
 
 const makeRemoveGroupedRole: (dependencies: DepRemoveGroupedRole) => typeof deleteGroupedRole_
