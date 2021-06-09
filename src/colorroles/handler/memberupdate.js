@@ -2,15 +2,15 @@
 
 const Discord = require("discord.js")
 
-const rolesStore = require("../rolestore")
-const rolesApi = require("../roleapi")
+import rolesStore from "../rolestore"
+import rolesApi from "../roleapi"
 const groupRolesAPI = require("../../groupedroles")
 
 /**
  * @param {Discord.GuildMember | Discord.PartialGuildMember} oldMember
  * @param {Discord.GuildMember | Discord.PartialGuildMember} newMember
  */
-module.exports = async (oldMember, newMember) => {
+export default async (oldMember, newMember) => {
 
     const colorRole = await rolesStore.getColorRole(newMember.guild.id, newMember.user.id)
     const removedRoles = oldMember.roles.cache.filter(it => !newMember.roles.cache.has(it.id))

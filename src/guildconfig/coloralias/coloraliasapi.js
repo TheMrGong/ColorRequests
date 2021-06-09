@@ -1,5 +1,7 @@
 //@ts-check
 
+const Discord = require("discord.js")
+
 const defaultAliases = require("./defaultalias")
 
 /**
@@ -17,7 +19,7 @@ const db = require("./coloraliasdb")
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @returns {Promise<ColorAlias[]>}
  */
 async function getColorAliases(guildId) {
@@ -36,7 +38,7 @@ async function getColorAliases(guildId) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} name 
  * @returns {Promise<ColorAlias | null>}
  */
@@ -51,7 +53,7 @@ async function getColorAlias(guildId, name) {
 /**
  * Adds a new color alias or updates an existing one
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} name 
  * @param {rgbUtil.RGBColor} color
  */
@@ -68,7 +70,7 @@ async function addColorAlias(guildId, name, color) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} name 
  */
 async function removeColorAlias(guildId, name) {

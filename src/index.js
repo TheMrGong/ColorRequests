@@ -1,4 +1,4 @@
-const bot = require("./bot")
+import bot from "./bot"
 
 bot.start().then(() => {
     console.log("ColorRequests bot ready.")

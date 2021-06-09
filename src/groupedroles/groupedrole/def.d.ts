@@ -1,5 +1,5 @@
 interface IGroupedRole {
-    getRoleId(): string
+    getRoleId(): `${bigint}`
     getRoleColor(): RGBColor
 
     isDeleting(): boolean
@@ -11,7 +11,7 @@ interface IGroupedRole {
 }
 
 class GroupedRoleInfo {
-    roleId: string
+    roleId: `${bigint}`
     roleColor: string
 }
 

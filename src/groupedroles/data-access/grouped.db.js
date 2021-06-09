@@ -1,5 +1,7 @@
 //@ts-check
 
+import Discord from "discord.js"
+
 /**
  * @param {Object} param
  * @param {typeof query} param.query
@@ -16,7 +18,7 @@ function makeGroupedDb({ query, makeGroupedRole, queryStatements: { GET_GROUPED_
     })
 
     /**
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @returns {Promise<IGroupedRole[]>}
      * @throws {Error} Error if the database had invalid data
      */
@@ -32,7 +34,7 @@ function makeGroupedDb({ query, makeGroupedRole, queryStatements: { GET_GROUPED_
     }
 
     /**
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @param {IGroupedRole} groupedRole 
      * @returns {Promise<any>}
      */
@@ -41,7 +43,7 @@ function makeGroupedDb({ query, makeGroupedRole, queryStatements: { GET_GROUPED_
     }
 
     /**
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @returns {Promise<any>}
      */
     async function removeGrouped(guildId, roleId) {

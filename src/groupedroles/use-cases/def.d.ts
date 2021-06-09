@@ -6,16 +6,16 @@ class CreateGroupedRoleDependencies extends DefaultDependencies {
     makeGroupedRole: typeof makeGroupedRole_
 }
 const makeAddGroupedRole_: (dependencies: CreateGroupedRoleDependencies) => typeof addGroupedRole_
-const addGroupedRole_: (guildId: string, info: GroupedRoleInfo) => Promise<IGroupedRole | undefined>
+const addGroupedRole_: (guildId: `${bigint}`, info: GroupedRoleInfo) => Promise<IGroupedRole | undefined>
 
 const makeDeleteGroupedRole_: (dependencies: DefaultDependencies) => typeof deleteGroupedRole_
-const deleteGroupedRole_: (guildId: string, roleId: string) => Promise<IGroupedRole>
+const deleteGroupedRole_: (guildId: `${bigint}`, roleId: `${bigint}`) => Promise<IGroupedRole>
 
 const makeGetGroupedRoles: (dependencies: DefaultDependencies) => typeof deleteGroupedRole_
-const getGroupedRoles_: (guildId: string, roleId: string) => Promise<IGroupedRole[]>
+const getGroupedRoles_: (guildId: `${bigint}`, roleId: `${bigint}`) => Promise<IGroupedRole[]>
 
 const makeFindGroupedRole_: (dependencies: DefaultDependencies) => typeof deleteGroupedRole_
-const findGroupedRole_: (guildId: string, color: string) => Promise<IGroupedRole>
+const findGroupedRole_: (guildId: `${bigint}`, color: string) => Promise<IGroupedRole>
 
 const makeGetGroupedRole_: (dependencies: DefaultDependencies) => typeof deleteGroupedRole_
-const getGroupedRole_: (guildId: string, roleId: string) => Promise<IGroupedRole>
+const getGroupedRole_: (guildId: `${bigint}`, roleId: `${bigint}`) => Promise<IGroupedRole>

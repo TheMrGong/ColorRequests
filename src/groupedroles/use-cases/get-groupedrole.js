@@ -1,5 +1,7 @@
 //@ts-check
 
+import Discord from "discord.js"
+
 /**
  * 
  * @param {DefaultDependencies} param
@@ -11,8 +13,8 @@ function makeGetGroupedRole({
     return getGroupedRole
     /**
      * 
-     * @param {string} guildId 
-     * @param {string} roleId
+     * @param {Discord.Snowflake} guildId 
+     * @param {Discord.Snowflake} roleId
      * @returns {Promise<IGroupedRole>}
      */
     async function getGroupedRole(guildId, roleId) {

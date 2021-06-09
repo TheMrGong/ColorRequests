@@ -198,7 +198,7 @@ function wrapImage(buffer) {
     return image
 }
 
-module.exports = {
+export default {
     getGifFramesCorrectly,
     caclulateGifDuration,
     createURLImageDrawer,

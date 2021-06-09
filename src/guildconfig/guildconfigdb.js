@@ -1,5 +1,7 @@
 //@ts-check
 
+const Discord = require("discord.js")
+
 const CONFIG_TABLE = "guild_config"
 const CHANGE_TABLE = "guild_change_roles"
 const { query } = require("../util/sql")
@@ -55,7 +57,7 @@ const RESET_CHANGE_ROLES = `DELETE FROM ${CHANGE_TABLE} WHERE guildId = ?`
 const QUERY_CHANGE = `SELECT colorChangePermRoleId FROM ${CHANGE_TABLE} WHERE guildId = ?`
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @returns {Promise<guildConfigs.GuildConfig>}
  */
 async function getGuildConfig(guildId) {
@@ -96,8 +98,8 @@ async function getGuildConfig(guildId) {
 
 /**
  * 
- * @param {string} guildId 
- * @returns {Promise<string[]>}
+ * @param {Discord.Snowflake} guildId 
+ * @returns {Promise<Discord.Snowflake[]>}
  */
 async function getChangeRoles(guildId) {
     const result = await query(QUERY_CHANGE, [guildId])
@@ -114,7 +116,7 @@ async function getChangeRoles(guildId) {
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  */
 async function resetChangeRoles(guildId) {
     return await query(RESET_CHANGE_ROLES, [guildId])
@@ -122,8 +124,8 @@ async function resetChangeRoles(guildId) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} changeRoleId
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} changeRoleId
  */
 async function addChangeRole(guildId, changeRoleId) {
     return await query(ADD_CHANGE_ROLE, [guildId, changeRoleId])
@@ -131,24 +133,24 @@ async function addChangeRole(guildId, changeRoleId) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} changeRoleId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} changeRoleId 
  */
 async function removeChangeRole(guildId, changeRoleId) {
     return await query(REMOVE_CHANGE_ROLE, [guildId, changeRoleId])
 }
 
 /**
- * @param {string} guildId 
- * @param {string} requestChannelId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} requestChannelId 
  */
 async function setGuildRequestChannelId(guildId, requestChannelId) {
     return await query(SET_CONFIG("requestChannelId"), [guildId, requestChannelId, null])
 }
 
 /**
- * @param {string} guildId 
- * @param {string} acceptRoleId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} acceptRoleId 
  */
 async function setGuildAcceptRoleId(guildId, acceptRoleId) {
     return await query(SET_CONFIG("acceptRoleId"), [guildId, null, acceptRoleId])
@@ -156,7 +158,7 @@ async function setGuildAcceptRoleId(guildId, acceptRoleId) {
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {...rgbUtil.RGBColor} preapprovedColors 
  */
 async function setGuildPreapprovedColors(guildId, ...preapprovedColors) {

@@ -12,9 +12,9 @@ const DEFAULT_PERMISSION = "MANAGE_ROLES"
 
 /**
  * @typedef GuildConfig
- * @property {string|null} requestChannelId 
- * @property {string|null} acceptingRoleId
- * @property {string[]} acceptedChangeRoles
+ * @property {Discord.Snowflake|null} requestChannelId 
+ * @property {Discord.Snowflake|null} acceptingRoleId
+ * @property {Discord.Snowflake[]} acceptedChangeRoles
  * @property {rgbUtil.RGBColor[]} preapprovedColors
  */
 
@@ -68,7 +68,7 @@ async function memberCanChangeColor(guildMember) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @returns {Promise<GuildConfig>}
  */
 async function getGuildConfig(guildId) {
@@ -83,8 +83,8 @@ async function getGuildConfig(guildId) {
 }
 
 /**
- * @param {string} guildId
- * @param {string} requestChannelId 
+ * @param {Discord.Snowflake} guildId
+ * @param {Discord.Snowflake} requestChannelId 
  */
 async function setGuildRequestChannel(guildId, requestChannelId) {
     const guildConfig = await getGuildConfig(guildId)
@@ -94,8 +94,8 @@ async function setGuildRequestChannel(guildId, requestChannelId) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} acceptingRoleId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} acceptingRoleId 
  */
 async function setGuildAcceptRole(guildId, acceptingRoleId) {
     const guildConfig = await getGuildConfig(guildId)
@@ -105,7 +105,7 @@ async function setGuildAcceptRole(guildId, acceptingRoleId) {
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  */
 async function resetChangeRoles(guildId) {
     const guildConfig = await getGuildConfig(guildId)
@@ -115,8 +115,8 @@ async function resetChangeRoles(guildId) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} changeRoleId
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} changeRoleId
  */
 async function addChangeRole(guildId, changeRoleId) {
     const guildConfig = await getGuildConfig(guildId)
@@ -132,8 +132,8 @@ async function addChangeRole(guildId, changeRoleId) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} changeRoleId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} changeRoleId 
  */
 async function removeChangeRole(guildId, changeRoleId) {
     const guildConfig = await getGuildConfig(guildId)
@@ -149,7 +149,7 @@ async function removeChangeRole(guildId, changeRoleId) {
 
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {rgbUtil.RGBColor} color 
  * @returns {Promise<boolean>}
  */
@@ -159,7 +159,7 @@ async function isPreapprovedColor(guildId, color) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {rgbUtil.RGBColor} color 
  */
 async function addPreapprovedColor(guildId, color) {
@@ -170,7 +170,7 @@ async function addPreapprovedColor(guildId, color) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {rgbUtil.RGBColor} color 
  */
 async function removePreapprovedColor(guildId, color) {
@@ -188,7 +188,7 @@ async function setup(client) {
     return db.ready
 }
 
-module.exports = {
+export default {
     getGuildConfig,
     setGuildAcceptRole,
     addChangeRole,

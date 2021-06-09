@@ -1,31 +1,34 @@
 //@ts-check
 const Discord = require("discord.js")
-const guildConfigs = require("../guildconfig/guildconfigs")
+import guildConfigs from "../guildconfig/guildconfigs"
 
-const config = require("../config")
 const requestDB = require("./requestdb")
-const requestStore = require("./requeststore")
+import requestStore from "./requeststore"
 
 const rgbUtil = require("../util/rgbutil")
 
-const roleApi = require("../colorroles/roleapi")
-const roleStore = require("../colorroles/rolestore")
+import roleApi from "../colorroles/roleapi"
+import roleStore from "../colorroles/rolestore"
 
-const requestImages = require("./requestimages")
+import requestImages from "./requestimages"
 const colorAliases = require("../guildconfig/coloralias/coloraliasapi")
-const discordUtil = require("../util/discordutil")
+import discordUtil, { idToFlake, UserContext } from "../util/discordutil"
 
 import { createGroupedRole, findGroupedRole, findGroupRoles, handleLossRole } from "../groupedroles"
+
+import reactionHandler from "./handler/reactionhandler"
+import messageHandler from "./handler/messagehandler"
+import deletionHandler from "./handler/deletionhandler"
 
 const ACCEPT_EMOJI = "✅"
 const DECLINE_EMOJI = "⛔"
 
 /**
- * @param {Discord.Message} requestingMessage 
+ * @param {UserContext} requestingMessage 
  * @param {rgbUtil.RGBColor} requestingColor 
  */
 async function createNewRequest(requestingMessage, requestingColor) {
-    let configChannel = (await guildConfigs.getGuildConfig(requestingMessage.guild.id)).requestChannelId
+    let configChannel = idToFlake((await guildConfigs.getGuildConfig(requestingMessage.guild.id)).requestChannelId)
 
     /**@type {Discord.TextChannel} */
     let requestChannelToUse;
@@ -41,13 +44,13 @@ async function createNewRequest(requestingMessage, requestingColor) {
             requestChannelToUse = requestingMessage.channel
 
             // update config to reflect invalid channel
-            guildConfigs.setGuildRequestChannel(requestingMessage.id, null)
+            guildConfigs.setGuildRequestChannel(requestingMessage.guild.id, null)
         }
     }
     let member = requestingMessage.member
-    if (!member) member = await requestingMessage.guild.members.fetch(requestingMessage.author)
+    if (!member) member = await requestingMessage.guild.members.fetch(requestingMessage.member.user)
 
-    const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, requestingMessage.author.id)
+    const existingRole = await roleStore.getColorRole(requestingMessage.guild.id, requestingMessage.member.user.id)
 
     const requestMessage = await (existingRole ? generateEditMessage(requestChannelToUse, member, requestingColor)
         : generateRequestMessage(requestChannelToUse, member, requestingColor))
@@ -56,7 +59,7 @@ async function createNewRequest(requestingMessage, requestingColor) {
 
 /**
  * 
- * @param {Discord.Message} requestingMessage 
+ * @param {UserContext} requestingMessage 
  * @param {Discord.GuildMember} member
  * @param {rgbUtil.RGBColor} color 
  * @returns {Promise<boolean>} Whether it was a change or a new role [true = new role]
@@ -75,7 +78,7 @@ async function doAccept(requestingMessage, member, color) {
         const groupRole = groupRoleForColor && requestingMessage.guild.roles.cache.get(groupRoleForColor.getRoleId())
         if (!groupRole) {
 
-            requestingMessage.channel.send("Unable to grant you the role, couldn't find grouped role?")
+            requestingMessage.sendMessage("Unable to grant you the role, couldn't find grouped role?")
             console.error("Unable to find group role for " + (groupRoleForColor && groupRoleForColor.getRoleColor()))
             return false
         }
@@ -111,7 +114,7 @@ async function doAccept(requestingMessage, member, color) {
         try {
             await roleApi.createColorRole(requestingMessage.guild.id, member.user.username + "'s Color Role", member.user.id, color)
         } catch (e) {
-            requestingMessage.channel.send("Unable to grant you the role. Missing permissions?")
+            requestingMessage.sendMessage("Unable to grant you the role. Missing permissions?")
             console.error("Failed to grant color role to " + member.displayName)
             console.error(e)
             return
@@ -167,7 +170,7 @@ async function mergeSameColorRoles(guild, sameRoles, color) {
 /**
  * @param {Discord.Message} requestingMessage 
  * @param {boolean} accepting 
- * @param {requestStore.ColorRequest} colorRequest 
+ * @param {ColorRequest} colorRequest 
  */
 async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
     await requestStore.removeRequest(requestingMessage.guild.id, colorRequest.requester)
@@ -178,7 +181,7 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
 
 
     if (accepting) {
-        if (await doAccept(requestingMessage, member, colorRequest.requestedColor))
+        if (await doAccept(await UserContext.ofMessage(requestingMessage), member, colorRequest.requestedColor))
             requestingMessage.channel.send("Granted a color role to " + member.user.toString() + "! Congratulations!")
         else requestingMessage.channel.send(`Changed ${member.user.toString()}'s username color!`)
         console.log("[/] Accepted a color request")
@@ -186,13 +189,13 @@ async function handleAcceptOrDeny(requestingMessage, accepting, colorRequest) {
 }
 
 /**
- * @param {Discord.Message} requestingMessage 
+ * @param {UserContext} requestingMessage 
  * @param {rgbUtil.RGBColor} requestingColor
  */
 async function handleNewRequest(requestingMessage, requestingColor) {
     try {
         let member = requestingMessage.member
-        if (!member) member = await requestingMessage.guild.members.fetch(requestingMessage.author)
+        if (!member) member = await requestingMessage.guild.members.fetch(requestingMessage.member.user)
 
         if(!(await guildConfigs.memberCanChangeColor(member))) {
             const changeRoles = (await guildConfigs.getGuildConfig(member.guild.id)).acceptedChangeRoles
@@ -200,7 +203,7 @@ async function handleNewRequest(requestingMessage, requestingColor) {
             .filter(it => it !== undefined)
             .map(it => it.name)
             .join(", ")
-            requestingMessage.channel.send("You need one of the following roles: ("+changeRoles+") to change your color")
+            await requestingMessage.sendMessage("You need one of the following roles: ("+changeRoles+") to change your color")
             return
         }
         const hasAcceptRole = await guildConfigs.memberHasAcceptRole(member)
@@ -209,29 +212,32 @@ async function handleNewRequest(requestingMessage, requestingColor) {
             const result = await doAccept(requestingMessage, member, requestingColor)
             if(result === undefined) return
             if (result)
-                requestingMessage.channel.send("Gave you a new role, enjoy your color " + member.user.toString() + "!")
-            else requestingMessage.channel.send("Updated your color, enjoy " + member.user.toString() + "!")
+                await requestingMessage.sendMessage("Gave you a new role, enjoy your color " + member.user.toString() + "!")
+            else await requestingMessage.sendMessage("Updated your color, enjoy " + member.user.toString() + "!")
 
             return
         }
-        const hasExisting = await requestStore.hasPendingRequest(requestingMessage.guild.id, requestingMessage.author.id)
+        const hasExisting = await requestStore.hasPendingRequest(requestingMessage.guild.id, requestingMessage.member.user.id)
         if (hasExisting) { // don't let them make additional requests
-            requestingMessage.channel.send("You already have a pending color request.")
+            await requestingMessage.sendMessage("You already have a pending color request.")
             return
         }
         await createNewRequest(requestingMessage, requestingColor)
-        if (requestingMessage.deletable) requestingMessage.delete()
-        requestingMessage.channel.send("Color requested, waiting for admin response")
-        console.log("[+] Created new color request for " + requestingMessage.author.username)
+        await requestingMessage.delete()
+        await requestingMessage.sendMessage("Color requested, waiting for admin response")
+        console.log("[+] Created new color request for " + requestingMessage.member.user.username)
     } catch (e) {
         console.error(e)
-        requestingMessage.channel.send("Error occurred generating request.")
+        requestingMessage.sendMessage("Error occurred generating request.").catch((e) => {
+            console.error(`Failed to show generating request`)
+            console.error(e)
+        })
     }
 }
 
 /**
  * @param {Discord.Message} message The message allowing admins to accept or deny
- * @param {requestStore.ColorRequest} colorRequest 
+ * @param {ColorRequest} colorRequest 
  */
 async function handleCancel(message, colorRequest) {
     await requestStore.removeRequest(message.guild.id, colorRequest.requester)
@@ -280,11 +286,9 @@ async function generateEditMessage(channel, requester, changingColor) {
  * @param {Discord.Client} client 
  */
 async function setup(client) {
-    client.on("messageReactionAdd", require("./handler/reactionhandler"))
-    //@ts-ignore
-    client.on("message", require("./handler/messagehandler"))
-
-    const deletionHandler = require("./handler/deletionhandler")
+    client.on("messageReactionAdd", reactionHandler)
+    client.on("message", messageHandler)
+    
     client.on("messageDelete", deletionHandler)
     client.on("messageDeleteBulk", deletionHandler)
     client.on("channelDelete", deletionHandler)
@@ -296,7 +300,7 @@ async function setup(client) {
     return requestDB.ready
 }
 
-module.exports = {
+export default {
     setup,
     createNewRequest,
     handleAcceptOrDeny,

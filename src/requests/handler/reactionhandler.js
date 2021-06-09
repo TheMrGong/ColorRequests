@@ -3,7 +3,7 @@
 const Discord = require("discord.js")
 
 const requestApi = require("../requestapi")
-const requestStore = require("../requeststore")
+import requestStore from "../requeststore"
 
 const guildConfig = require("../../guildconfig/guildconfigs")
 
@@ -12,7 +12,7 @@ const guildConfig = require("../../guildconfig/guildconfigs")
  * @param {Discord.MessageReaction} reaction 
  * @param {Discord.User | Discord.PartialUser} user 
  */
-module.exports = async (reaction, user) => {
+export default async (reaction, user) => {
     const accepting = reaction.emoji.toString() == requestApi.ACCEPT_EMOJI
 
     if (user.bot) return

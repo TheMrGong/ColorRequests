@@ -2,11 +2,11 @@
 
 const Discord = require("discord.js")
 
-const requestStore = require("../requeststore")
+import requestStore from "../requeststore"
 
 /**
- * @param {string} guildId
- * @param {...requestStore.ColorRequest} colorRequests 
+ * @param {Discord.Snowflake} guildId
+ * @param {...ColorRequest} colorRequests 
  */
 async function handleDeletion(guildId, ...colorRequests) {
     if (colorRequests.length == 1) {
@@ -19,7 +19,7 @@ async function handleDeletion(guildId, ...colorRequests) {
 /**
  * @param {Discord.Message | Discord.PartialMessage | Discord.Collection<string, Discord.Message | Discord.PartialMessage> | Discord.Channel | Discord.PartialChannelData} deleted
  */
-module.exports = async function (deleted) {
+export default async function (deleted) {
     let deleting = []
 
     let guildId;

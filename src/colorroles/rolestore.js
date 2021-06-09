@@ -1,14 +1,15 @@
 //@ts-check
 
-const client = require("../bot").client
-const rgbUtil = require("../util/rgbutil")
+const Discord = require("discord.js")
+
+import { client } from "../bot"
 
 const db = require("./roledb")
 
 /**@type {Object.<string, ColorRole[]>} */
 const colorRoles = {}
 /** 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @returns {Promise<ColorRole[]>}
  */
 async function getColorRoles(guildId) {
@@ -77,8 +78,8 @@ async function filterValidRoles(guildId, roles) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} userId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} userId 
  * @returns {Promise<ColorRole|null>}
  */
 async function getColorRole(guildId, userId) {
@@ -89,7 +90,7 @@ async function getColorRole(guildId, userId) {
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} color 
  * @returns {Promise<ColorRole[]>}
  */
@@ -108,9 +109,9 @@ async function getRolesWithColor(guildId, color) {
 }
 
 /**
- * @param {string} guildId 
- * @param {string} userId 
- * @param {string} roleId
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} userId 
+ * @param {Discord.Snowflake} roleId
  */
 async function registerColorRole(guildId, userId, roleId) {
     const roles = await getColorRoles(guildId)
@@ -124,8 +125,8 @@ async function registerColorRole(guildId, userId, roleId) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} userId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} userId 
  */
 async function unregisterColorRole(guildId, userId) {
     const roles = (await getColorRoles(guildId)).filter(it => it.roleOwner != userId)
@@ -135,8 +136,8 @@ async function unregisterColorRole(guildId, userId) {
 
 /**
  * 
- * @param {string} guildId 
- * @param  {...string} userIds 
+ * @param {Discord.Snowflake} guildId 
+ * @param  {...Discord.Snowflake} userIds 
  */
 async function unregisterMultipleColorRoles(guildId, ...userIds) {
     const roles = (await getColorRoles(guildId)).filter(it => userIds.filter(u => u == it.roleOwner).length == 0)
@@ -144,7 +145,7 @@ async function unregisterMultipleColorRoles(guildId, ...userIds) {
     await db.unregisterRoles(guildId, ...userIds)
 }
 
-module.exports = {
+export default {
     getColorRoles,
     getColorRole,
     registerColorRole,

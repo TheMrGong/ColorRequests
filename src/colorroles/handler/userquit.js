@@ -2,15 +2,15 @@
 
 const Discord = require("discord.js")
 
-const roleStore = require("../rolestore")
-const roleApi = require("../roleapi")
+import roleStore from "../rolestore"
+import roleApi from "../roleapi"
 const groupRolesAPI = require("../../groupedroles")
 
 
 /**
  * @param {Discord.GuildMember | Discord.PartialGuildMember} memberLeft
  */
-module.exports = async (memberLeft) => {
+export default async (memberLeft) => {
     const userRole = await roleStore.getColorRole(memberLeft.guild.id, memberLeft.user.id)
     if (userRole) {
         console.log("User left with a color role, removing color role")

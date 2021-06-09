@@ -4,7 +4,7 @@ const Discord = require("discord.js")
 /**@typedef {import("../guildconfig/coloralias/coloraliasapi").ColorAlias} ColorAlias  */
 
 const { AnimationContext } = require("../util/graphics/animatorutil")
-const gifUtil = require("../util/graphics/gifutil")
+import gifUtil from "../util/graphics/gifutil"
 const canvasAPI = require("canvas")
 const hsv = require("rgb-hsv")
 
@@ -157,7 +157,7 @@ async function generateAliasHelp(guild, aliases) {
     return await context.generateGif()
 }
 
-module.exports = {
+export default {
     generateChangeImage,
     generateAliasHelp
 }

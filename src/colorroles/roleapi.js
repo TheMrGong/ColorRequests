@@ -2,17 +2,23 @@
 
 const Discord = require("discord.js")
 
-const client = require("../bot").client
+import { client } from "../bot"
+
 const rgbUtil = require("../util/rgbutil")
-const roleStore = require("./rolestore")
+import roleStore from "./rolestore"
 const roleDB = require("./roledb")
-const discordUtil = require("../util/discordutil")
+
+import discordUtil from "../util/discordutil"
+
+import userQuit from "./handler/userquit"
+import memberUpdate from "./handler/memberupdate"
+import roleDeleted from "./handler/roledeleted"
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} name
- * @param {string} userId 
+ * @param {Discord.Snowflake} userId 
  * @param {rgbUtil.RGBColor} roleColor 
  */
 async function createColorRole(guildId, name, userId, roleColor) {
@@ -24,13 +30,11 @@ async function createColorRole(guildId, name, userId, roleColor) {
     const priortyAbove = discordUtil.findHighestColorPriority(member)
 
     const role = await guild.roles.create({
-        data: {
-            color: [roleColor.r, roleColor.g, roleColor.b],
-            mentionable: false,
-            name,
-            position: 1,
-            permissions: 0
-        },
+        color: [roleColor.r, roleColor.g, roleColor.b],
+        mentionable: false,
+        name,
+        position: 1,
+        permissions: [],
         reason: "User color role"
     })
 
@@ -55,8 +59,8 @@ async function createColorRole(guildId, name, userId, roleColor) {
 
 /**
  * 
- * @param {string} guildId 
- * @param {string} userId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} userId 
  */
 async function removeColorRole(guildId, userId) {
     const role = await roleStore.getColorRole(guildId, userId)
@@ -79,7 +83,7 @@ async function removeColorRole(guildId, userId) {
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param  {...ColorRole} roles
  */
 async function removeMultipleColorRoles(guildId, ...roles) {
@@ -109,8 +113,8 @@ async function removeMultipleColorRoles(guildId, ...roles) {
 }
 
 /**
- * @param {string} guildId 
- * @param {string} userId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} userId 
  * @param {rgbUtil.RGBColor} newColor 
  */
 async function changeColorRoleColor(guildId, userId, newColor) {
@@ -152,9 +156,9 @@ async function changeColorRoleColor(guildId, userId, newColor) {
  * @param {Discord.Client} client 
  */
 async function setup(client) {
-    client.on("roleDelete", require("./handler/roledeleted"))
-    client.on("guildMemberRemove", require("./handler/userquit"))
-    client.on("guildMemberUpdate", require("./handler/memberupdate"))
+    client.on("roleDelete", roleDeleted)
+    client.on("guildMemberRemove", userQuit)
+    client.on("guildMemberUpdate", memberUpdate)
 
     const guilds = client.guilds.cache.array()
     for (let k in guilds) // pre-cache all current guilds
@@ -162,7 +166,7 @@ async function setup(client) {
     return roleDB.ready
 }
 
-module.exports = {
+export default {
     setup,
     createColorRole,
     removeColorRole,

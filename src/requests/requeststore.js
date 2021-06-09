@@ -3,35 +3,24 @@
 const Discord = require("discord.js")
 const rgbUtil = require("../util/rgbutil")
 
-const client = require("../bot").client
+import { client } from "../bot"
 const db = require("./requestdb")
+
+import { UserContext } from "../util/discordutil"
 
 // key is guild id
 /**@type {Object.<string, ColorRequest[]>} **/
 const colorRequests = {}
 
 /**
- * @typedef ColorRequest
- * @property {string} requester Discord id of requester
- * @property {PendingMessage} pendingMessage Discord ID of pending message
- * @property {rgbUtil.RGBColor} requestedColor Object for color requested
- */
-
-/**
- * @typedef PendingMessage
- * @property {string} channelId 
- * @property {string} messageId 
- */
-
-/**
- * @param {Discord.Message} requestingMessage 
+ * @param {UserContext} requestingMessage 
  * @param {Discord.Message} requestMessage Associated message to request
  * @param {rgbUtil.RGBColor} requestingColor 
  */
 async function registerNewRequest(requestingMessage, requestMessage, requestingColor) {
     const requests = await getGuildPending(requestingMessage.guild.id)
     const colorRequest = {
-        requester: requestingMessage.author.id,
+        requester: requestingMessage.member.user.id,
         pendingMessage: {
             channelId: requestMessage.channel.id,
             messageId: requestMessage.id
@@ -43,7 +32,7 @@ async function registerNewRequest(requestingMessage, requestMessage, requestingC
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @returns {Promise<ColorRequest[]>}
  */
 async function getGuildPending(guildId) {
@@ -103,8 +92,8 @@ async function filterValidRequests(guildId, requests) {
 }
 
 /**
- * @param {string} guildId 
- * @param {string} userId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} userId 
  */
 async function removeRequest(guildId, userId) {
     const requests = (await getGuildPending(guildId)).filter(it => it.requester != userId)
@@ -113,8 +102,8 @@ async function removeRequest(guildId, userId) {
 }
 
 /**
- * @param {string} guildId 
- * @param {...string} userIds 
+ * @param {Discord.Snowflake} guildId 
+ * @param {...Discord.Snowflake} userIds 
  */
 async function removeMultipleRequests(guildId, ...userIds) {
     const requests = (await getGuildPending(guildId)).filter(it => userIds.filter(u => u == it.requester).length == 0)
@@ -123,8 +112,8 @@ async function removeMultipleRequests(guildId, ...userIds) {
 }
 
 /**
- * @param {string} guildId 
- * @param {string} userId 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} userId 
  * @returns {Promise<boolean>}
  */
 async function hasPendingRequest(guildId, userId) {
@@ -143,7 +132,7 @@ async function findRequestByMessage(message) {
     return found[0]
 }
 
-module.exports = {
+export default {
     getGuildPending,
     registerNewRequest,
     hasPendingRequest,

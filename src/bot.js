@@ -3,22 +3,23 @@
 const Discord = require("discord.js")
 const config = require("./config")
 
-const client = new Discord.Client()
+import guildConfigs from "./guildconfig/guildconfigs"
+import requestApi from "./requests/requestapi"
+import roleApi from "./colorroles/roleapi"
 
-const setup = [
-    "./guildconfig/guildconfigs",
-    "./requests/requestapi",
-    "./colorroles/roleapi"
-]
+export const client = new Discord.Client({
+    intents: [`GUILDS`, `GUILD_MESSAGES`]
+})
 
-async function botStart() {
+async function start() {
 
     console.log("Logging in...")
     await client.login(config.token)
     console.log("Logged in")
 
-    for (let k in setup)
-        await require(setup[k]).setup(client)
+    await guildConfigs.setup(client)
+    await requestApi.setup(client)
+    await roleApi.setup(client)
 }
 
 client.on("error", err => {
@@ -26,7 +27,7 @@ client.on("error", err => {
     console.error(err)
 })
 
-module.exports = {
-    start: botStart,
+export default {
+    start,
     client
 }

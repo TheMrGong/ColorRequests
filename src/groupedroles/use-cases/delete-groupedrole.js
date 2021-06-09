@@ -1,5 +1,7 @@
 //@ts-check
 
+import Discord from "discord.js"
+
 /**
  * 
  * @param {DefaultDependencies} param
@@ -12,8 +14,8 @@ function makeDeleteGroupedRole({
     return removeGroupedRole
     /**
      * 
-     * @param {string} guildId 
-     * @param {string} roleId
+     * @param {Discord.Snowflake} guildId 
+     * @param {Discord.Snowflake} roleId
      * @returns {Promise<IGroupedRole | undefined>}
      */
     async function removeGroupedRole(guildId, roleId) {

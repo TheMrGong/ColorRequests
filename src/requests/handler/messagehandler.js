@@ -2,24 +2,24 @@
 
 const Discord = require("discord.js")
 import hexToRgb from "../../util/rgbutil"
+import { idToFlake, UserContext } from "../../util/discordutil"
 const config = require("../../config")
 
-const guildConfig = require('../../guildconfig/guildconfigs')
+import guildConfig from "../../guildconfig/guildconfigs"
 
 const requestApi = require("../requestapi")
 const colorAlias = require("../../guildconfig/coloralias/coloraliasapi")
-const requestImages = require("../requestimages")
-const roleStore = require("../../colorroles/rolestore")
+import requestImages from "../requestimages"
+import roleStore from "../../colorroles/rolestore"
 
 const CONFIG_PERM = "MANAGE_ROLES"
 
 const GONGO = "712789814839083020"
 
 /**
-* 
 * @param {Discord.Message} message 
 */
-module.exports = async (message) => {
+export default async (message) => {
     if (message.author.bot) return
     if (!message.guild) {
         message.channel.send("You can only interact with this bot within servers.")
@@ -55,10 +55,10 @@ module.exports = async (message) => {
             if (alias) rgb = alias.color
         }
         if (!rgb) message.channel.send("Unable to figure out the color. To see pre-approved colors, do " + config.prefix + "available")
-        else requestApi.handleNewRequest(message, rgb)
+        else requestApi.handleNewRequest(await UserContext.ofMessage(message), rgb)
     } else if (cmd.toLowerCase() == "setcolorchannel") {
 
-        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+        if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to set the color channel.")
             return
         }
@@ -69,10 +69,14 @@ module.exports = async (message) => {
             return
         }
         const channel = mentionedChannels[0]
+        if(!(channel instanceof Discord.TextChannel)) {
+            message.channel.send(`Must be a text channel`)
+            return
+        }
         guildConfig.setGuildRequestChannel(channel.guild.id, channel.id)
         message.channel.send("Set the color channel to " + channel.toString() + ". All requests will be shown there.")
     } else if (cmd.toLowerCase() == "setacceptrole") {
-        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+        if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to set the accept role.")
             return
         }
@@ -80,7 +84,7 @@ module.exports = async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.cache.get(args[0])
+        else if (args.length > 0) role = message.guild.roles.cache.get(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setacceptrole <@Mods | 481910962291736576>")
             return
@@ -88,7 +92,7 @@ module.exports = async (message) => {
         guildConfig.setGuildAcceptRole(role.guild.id, role.id)
         message.channel.send("Set the accept role to " + role.name + ". Users with this role will be able to accept color change requests.")
     } else if(cmd.toLowerCase() == "addchangerole") {
-        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+        if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to add a change role.")
             return
         }
@@ -96,7 +100,7 @@ module.exports = async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.cache.get(args[0])
+        else if (args.length > 0) role = message.guild.roles.cache.get(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
             return
@@ -107,7 +111,7 @@ module.exports = async (message) => {
             message.channel.send("Already have color change role " + role.name)
         }
     } else if(cmd.toLowerCase() == "removechangerole") {
-        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+        if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to remove a change role.")
             return
         }
@@ -115,7 +119,7 @@ module.exports = async (message) => {
 
         const mentionedRoles = message.mentions.roles.array()
         if (mentionedRoles.length > 0) role = mentionedRoles[0]
-        else if (args.length > 0) role = message.guild.roles.cache.get(args[0])
+        else if (args.length > 0) role = message.guild.roles.cache.get(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
             return
@@ -126,7 +130,7 @@ module.exports = async (message) => {
             message.channel.send("Don't already have color change role " + role.name)
         }
     } else if(cmd.toLowerCase() == "resetchangerole") {
-        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+        if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to reset change roles.")
             return
         }
@@ -142,7 +146,7 @@ module.exports = async (message) => {
         if (!image) message.channel.send("Error generating image!")
         else message.channel.send(new Discord.MessageAttachment(image, "help.gif"))
     } else if (cmd.toLowerCase() == "cleanup") {
-        if (!member.hasPermission(CONFIG_PERM) && member.id != GONGO) {
+        if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to cleanup the server")
             return
         }

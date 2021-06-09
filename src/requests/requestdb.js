@@ -1,6 +1,7 @@
 //@ts-check
 
-/**@typedef {import("./requeststore").ColorRequest} ColorRequest */
+const Discord = require("discord.js")
+
 const hexToRgb = require("../util/rgbutil")
 
 const TABLE_NAME = "requests"
@@ -23,7 +24,7 @@ const DELETE_REQUEST = `DELETE FROM ${TABLE_NAME} WHERE guildId = ? AND requesti
 const MULTI_DELETE = `DELETE FROM ${TABLE_NAME} WHERE guildId = ? AND requestingId IN (?)`
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @returns {Promise<ColorRequest[]>}
  */
 async function getGuildRequests(guildId) {
@@ -48,7 +49,7 @@ async function getGuildRequests(guildId) {
 }
 
 /**
- * @param {string} guildId
+ * @param {Discord.Snowflake} guildId
  * @param {ColorRequest} request 
  */
 async function registerNewRequest(guildId, request) {
@@ -61,7 +62,7 @@ async function registerNewRequest(guildId, request) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} requestId 
  */
 async function deleteRequest(guildId, requestId) {
@@ -71,7 +72,7 @@ async function deleteRequest(guildId, requestId) {
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param  {...string} requests 
  */
 async function multiDeleteRequests(guildId, ...requests) {

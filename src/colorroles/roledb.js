@@ -1,5 +1,7 @@
 //@ts-check
 
+const Discord = require("discord.js")
+
 const TABLE_NAME = "color_roles"
 const { query } = require("../util/sql")
 
@@ -35,16 +37,16 @@ async function getGuildRoles(guildId) {
 }
 
 /**
- * @param {string} guildId 
- * @param {string} roleId 
- * @param {string} roleOwner 
+ * @param {Discord.Snowflake} guildId 
+ * @param {Discord.Snowflake} roleId 
+ * @param {Discord.Snowflake} roleOwner 
  */
 async function registerNewRole(guildId, roleId, roleOwner) {
     return await query(ADD_NEW_ROLE, [guildId, roleId, roleOwner])
 }
 
 /**
- * @param {string} guildId
+ * @param {Discord.Snowflake} guildId
  * @param  {...string} roleOwner 
  */
 async function unregisterRoles(guildId, ...roleOwner) {

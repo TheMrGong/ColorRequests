@@ -1,5 +1,7 @@
 //@ts-check
 
+import Discord from "discord.js"
+
 /**
  * @returns {IGroupedRoleCache}
  */
@@ -16,7 +18,7 @@ export default function makeGroupedCache() {
     })
 
     /**
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @returns {IGroupedRole[] | undefined}
      */
     function getGroupedRoles(guildId) {
@@ -24,7 +26,7 @@ export default function makeGroupedCache() {
     }
 
     /**
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @param {IGroupedRole[]} roles 
      */
     function setCache(guildId, roles) {
@@ -32,7 +34,7 @@ export default function makeGroupedCache() {
     }
 
     /**
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @returns {boolean}
      */
     function guildHasBeenLoaded(guildId) {
@@ -41,7 +43,7 @@ export default function makeGroupedCache() {
 
     /**
      * 
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @returns {IGroupedRole[]}
      */
     function getGroupedRolesOrDefault(guildId) {
@@ -49,8 +51,8 @@ export default function makeGroupedCache() {
     }
 
     /**
-     * @param {string} guildId 
-     * @param {string} roleId 
+     * @param {Discord.Snowflake} guildId 
+     * @param {Discord.Snowflake} roleId 
      * @returns {IGroupedRole | undefined}
      */
     function getGroupedRole(guildId, roleId) {
@@ -58,7 +60,7 @@ export default function makeGroupedCache() {
     }
 
     /**
-     * @param {string} guildId 
+     * @param {Discord.Snowflake} guildId 
      * @param {IGroupedRole} groupedRole 
      * @returns {boolean} whether it was added
      */
@@ -71,8 +73,8 @@ export default function makeGroupedCache() {
 
     /**
      * 
-     * @param {string} guildId 
-     * @param {string} roleId 
+     * @param {Discord.Snowflake} guildId 
+     * @param {Discord.Snowflake} roleId 
      * @returns {IGroupedRole | undefined} 
      */
     function removeGroupedRole(guildId, roleId) {

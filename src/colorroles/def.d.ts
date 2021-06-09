@@ -1,5 +1,5 @@
 class ColorRole {
-    roleId: string
-    roleOwner: string
+    roleId: `${bigint}`
+    roleOwner: `${bigint}`
     deleting: boolean
 }

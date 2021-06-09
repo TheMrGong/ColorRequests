@@ -1,5 +1,7 @@
 //@ts-check
 
+const Discord = require("discord.js")
+
 /**@typedef {import("./coloraliasapi").ColorAlias} ColorAlias */
 const TABLE_NAME = "color_alias"
 const { query } = require("../../util/sql")
@@ -22,7 +24,7 @@ const REMOVE_ALIAS = `DELETE FROM ${TABLE_NAME} WHERE guildId = ? AND name = ?`
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @returns {Promise<ColorAlias[] | null>}
  */
 async function getColorAliases(guildId) {
@@ -41,7 +43,7 @@ async function getColorAliases(guildId) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} name 
  * @param {rgbFromHex.RGBColor} color 
  */
@@ -53,7 +55,7 @@ async function addOrUpdateColorAlias(guildId, name, color) {
 
 /**
  * 
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {ColorAlias[]} aliases 
  */
 async function addMultiColors(guildId, aliases) {
@@ -67,7 +69,7 @@ async function addMultiColors(guildId, aliases) {
 }
 
 /**
- * @param {string} guildId 
+ * @param {Discord.Snowflake} guildId 
  * @param {string} name 
  */
 async function removeColorAlias(guildId, name) {
