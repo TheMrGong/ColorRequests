@@ -16,6 +16,7 @@ export default async (role) => {
     const foundGroup = await groupRoleApi.getGroupedRole(role.guild.id, role.id)
     if (foundGroup) {
         await groupRoleApi.removeGroupedRole(role.guild.id, role.id)
+        foundGroup.setDeleting(true)
         console.log("Unregistered grouped role " + role.name + " since it was deleted")
     }
 }
