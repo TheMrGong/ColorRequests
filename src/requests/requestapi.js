@@ -85,14 +85,37 @@ async function doAccept(requestingMessage, member, color) {
     }
 
     if (groupRoleForColor) {
-        const groupRole = await requestingMessage.guild.roles.fetch(groupRoleForColor.getRoleId())
+        let groupRole = await requestingMessage.guild.roles.fetch(groupRoleForColor.getRoleId())
         if(!groupRole) {
             await removeGroupedRole(requestingMessage.guild.id, groupRoleForColor.getRoleId())
             console.log(`Failed to find group role in guild when existed in DB, deleting`)
         } else {
             if (existingRole)
             await roleApi.removeColorRole(member.guild.id, member.user.id)
+
+            // ensure members are fetched
+            if(groupRole.guild.memberCount !== groupRole.guild.members.cache.size) {
+                await member.guild.members.fetch()
+            }
             await member.roles.add(groupRole)
+            // refetch from api/cache
+            groupRole = await requestingMessage.guild.roles.fetch(groupRoleForColor.getRoleId())
+            
+            let highestPosition = 0
+            groupRole.members.forEach((member) => {
+                const highestPriority = discordUtil.findHighestColorPriority(member)
+                if(highestPriority > highestPosition) {
+                    highestPosition = highestPriority
+                }
+            })
+            if(highestPosition != 0 && groupRole.position < highestPosition) {
+                console.log(`Moving group role up since new member would not have their color shown`)
+                await groupRole.guild.roles.fetch()
+                await groupRole.setPosition(highestPosition + 1).catch((e) => {
+                    console.error(`Failed to update group role position`)
+                    console.error(e)
+                })
+            }
             return true
         }
     }
