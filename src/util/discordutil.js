@@ -7,8 +7,6 @@ const Discord = require("discord.js")
  * @returns {number}
  */
 function findHighestColorPriority(member) {
-    const highestColor = member.roles.cache.filter(it => it.color != 0).sort((b1, b2) => b2.position - b1.position).first()
-    console.log(`highest color for ${member.user.username} - ${highestColor.name} position ${highestColor.position}`)
     return member.roles.cache.filter(it => it.color != 0).map(it => it.position).sort((b1, b2) => b2 - b1).shift() || 0
 }
 
