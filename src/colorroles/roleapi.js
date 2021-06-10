@@ -30,7 +30,6 @@ async function createColorRole(guildId, name, userId, roleColor) {
     const user = bot.client.users.cache.get(userId)
     const member = await guild.members.fetch(user)
 
-    const priortyAbove = discordUtil.findHighestColorPriority(member)
 
     const role = await guild.roles.create({
         color: [roleColor.r, roleColor.g, roleColor.b],
@@ -40,9 +39,12 @@ async function createColorRole(guildId, name, userId, roleColor) {
         reason: "User color role"
     })
 
+    // fetch this after creating the role
+    const priortyAbove = discordUtil.findHighestColorPriority(member)
+
     if (priortyAbove != 0) // check if they even HAVE a role
         try {
-            await role.setPosition(priortyAbove + 1)
+            await role.setPosition(priortyAbove)
         } catch (e) {
             await role.delete()
             throw "User has too high of a role to give a color: " + e
@@ -143,11 +145,11 @@ async function changeColorRoleColor(guildId, userId, newColor) {
             priortyAbove = theRoles.position
     })
 
-    if (priortyAbove + 1 > guildRole.position) {
+    if (priortyAbove >= guildRole.position) {
         try {
             // ensure roles up to date before trying to resort
             await guildRole.guild.roles.fetch()
-            await guildRole.setPosition(priortyAbove + 1)
+            await guildRole.setPosition(priortyAbove)
         } catch (e) {
             console.error("Unable to update old role to use higher position")
         }

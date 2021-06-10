@@ -111,7 +111,7 @@ async function doAccept(requestingMessage, member, color) {
             if(highestPosition != 0 && groupRole.position < highestPosition) {
                 console.log(`Moving group role up since new member would not have their color shown`)
                 await groupRole.guild.roles.fetch()
-                await groupRole.setPosition(highestPosition + 1).catch((e) => {
+                await groupRole.setPosition(highestPosition).catch((e) => {
                     console.error(`Failed to update group role position`)
                     console.error(e)
                 })
@@ -128,8 +128,8 @@ async function doAccept(requestingMessage, member, color) {
             await mergeSameColorRoles(requestingMessage.guild, [existingRole, ...rolesWithColor], color)
         } else {
             const groupRole = await mergeSameColorRoles(requestingMessage.guild, rolesWithColor, color)
-            const highestColorCurrently = discordUtil.findHighestColorPriority(member) + 1
-            if (groupRole.position < highestColorCurrently) {
+            const highestColorCurrently = discordUtil.findHighestColorPriority(member)
+            if (groupRole.position <= highestColorCurrently) {
                 try {
                     await groupRole.setPosition(highestColorCurrently, { relative: false })
                 } catch (e) {
@@ -192,7 +192,7 @@ async function mergeSameColorRoles(guild, sameRoles, color) {
         try {
             // ensure roles up to date before trying to resort
             await role.guild.roles.fetch()
-            role = await role.setPosition(highestPosition + 1, { relative: false })
+            role = await role.setPosition(highestPosition, { relative: false })
         } catch (e) {
             console.warn("Failed to update group role position", e)
         }
