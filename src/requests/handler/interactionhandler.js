@@ -7,10 +7,9 @@ const requestApi = require("../requestapi")
 const colorAlias = require("../../guildconfig/coloralias/coloraliasapi")
 
 /**
- * 
  * @param {Discord.Interaction} interaction 
  */
-export default async function onInteraction(interaction) {
+async function handleInteraction(interaction) {
     if (!interaction.isMessageComponent()) {
         return
     }
@@ -30,4 +29,15 @@ export default async function onInteraction(interaction) {
         }
         
     }
+}
+
+/**
+ * 
+ * @param {Discord.Interaction} interaction 
+ */
+export default function onInteraction(interaction) {
+    handleInteraction(interaction).catch((e) => {
+        console.error(`Failed to handle interaction`)
+        console.error(e)
+    })
 }
