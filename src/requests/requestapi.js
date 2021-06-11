@@ -290,7 +290,9 @@ async function handleCancel(message, colorRequest) {
  * @returns {Promise<Discord.Message>}
  */
 async function generateRequestMessage(channel, requester, requestingColor) {
-    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL(), "#" + requestingColor.hexColor())
+    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL({
+        format: `png`
+    }), "#" + requestingColor.hexColor())
     const message = await channel.send(new Discord.MessageAttachment(image, "display.gif"))
 
     if (message instanceof Discord.Message) {
@@ -308,7 +310,9 @@ async function generateRequestMessage(channel, requester, requestingColor) {
  * @returns {Promise<Discord.Message>}
  */
 async function generateEditMessage(channel, requester, changingColor) {
-    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL(), "#" + changingColor.hexColor())
+    const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL({
+        format: `png`
+    }), "#" + changingColor.hexColor())
     const message = await channel.send(new Discord.MessageAttachment(image, "display.gif"))
 
     if (message instanceof Discord.Message) {

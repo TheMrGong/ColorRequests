@@ -53,7 +53,7 @@ async function getGuildPending(guildId) {
 async function filterValidRequests(guildId, requests) {
 
 
-    const guild = bot.client.guilds.cache.get(guildId)
+    const guild = await bot.client.guilds.fetch(guildId)
 
     if (!guild) { // guild is now gone
         await removeMultipleRequests(guildId, ...requests.map(it => it.requester))
@@ -69,17 +69,23 @@ async function filterValidRequests(guildId, requests) {
     for (let k in requests) {
         const request = requests[k]
 
-        const channel = guild.channels.cache.get(request.pendingMessage.channelId)
+        const channel = guild.channels.cache.get(guild.channels.resolveID(request.pendingMessage.channelId))
         if (!(channel instanceof Discord.TextChannel)) { // channel no longer exists
             invalidRequests.push(request)
+            console.log(`Couldn't find channel for pending request, invalidating - ${channel}, ${request.pendingMessage.channelId}`)
             continue
         }
         let message;
         try {
             message = await channel.messages.fetch(request.pendingMessage.messageId)
         } catch (e) { }
-        if (!message) invalidRequests.push(request)
-        else validRequests.push(request)
+        if (!message) {
+            invalidRequests.push(request)
+            console.log(`Couldn't find message ${request.pendingMessage.messageId} in channel #${channel.name} invalidating`)
+        }
+        else {
+            validRequests.push(request)
+        }
     }
 
     const invalids = invalidRequests.map(it => it.requester)
