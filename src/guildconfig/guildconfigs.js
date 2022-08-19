@@ -4,9 +4,8 @@ const Discord = require("discord.js")
 
 /**@type {Object.<string, GuildConfig>} */
 const guildConfigs = {}
-const db = require("./guildconfigdb")
-
-const rgbUtil = require("../util/rgbutil")
+import db from "./guildconfigdb"
+import rgbUtil from "../util/rgbutil"
 
 const DEFAULT_PERMISSION = "MANAGE_ROLES"
 

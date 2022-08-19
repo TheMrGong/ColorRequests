@@ -198,6 +198,14 @@ function wrapImage(buffer) {
     return image
 }
 
+export {
+    getGifFramesCorrectly,
+    caclulateGifDuration,
+    createURLImageDrawer,
+    wrapImage,
+    readImage
+}
+
 export default {
     getGifFramesCorrectly,
     caclulateGifDuration,

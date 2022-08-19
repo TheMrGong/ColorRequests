@@ -2,6 +2,8 @@
 
 import Discord from "discord.js"
 
+// fixing up the ColorRequests
+
 /**
  * 
  * @param {DefaultDependencies} param
@@ -20,5 +22,5 @@ function makeGetGroupedRoles({
         return cache.getGroupedRoles(guildId)
     }
 }
-/**@type {typeof makeAddGroupedRole_} */
+/**@type {typeof makeGetGroupedRoles_} */
 export default makeGetGroupedRoles

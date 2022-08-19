@@ -64,7 +64,7 @@ async function generateChangeImage(userName, profileURL, newColor) {
 
             //frame.ctx.font = frame.ctx.font = "15px Whitney-Book"
             f.ctx.font = f.ctx.font = "15px Whitney-Book"
-            f.ctx.fillText(exampleText, 50, 20 + info.emHeightAscent + 5)
+            f.ctx.fillText(exampleText, 50, 20 + info.actualBoundingBoxAscent + 5)
         })
     context.backgroundColor = "#36393f"
     return await context.generateGif()
@@ -113,11 +113,11 @@ async function generateAliasHelp(guild, aliases) {
             }
             /**@param {ColorAlias} alias*/
             function drawAlias(alias, x, y) {
-                f.ctx.fillStyle = "#" + alias.color.hexColor()
+                f.ctx.fillStyle = alias.color.hexColor()
                 f.ctx.fillRect(x, y, aliasSquareSize, aliasSquareSize)
                 f.ctx.font = f.ctx.font = aliasFont
                 let sizing = f.ctx.measureText(alias.name)
-                f.ctx.fillText(alias.name, x + aliasSquareSize + aliasTextPadding, y + sizing.emHeightAscent)
+                f.ctx.fillText(alias.name, x + aliasSquareSize + aliasTextPadding, y + sizing.actualBoundingBoxAscent)
             }
 
             if (guildIconDrawer) guildIconDrawer.draw(f, 0, 0, guildIconSize, guildIconSize)
@@ -126,14 +126,14 @@ async function generateAliasHelp(guild, aliases) {
                 f.ctx.font = f.ctx.font = "30px Whitney-Medium"
                 f.ctx.fillStyle = "#ffffff"
                 const measure = f.ctx.measureText(guild.nameAcronym)
-                f.ctx.fillText(guild.nameAcronym, 0, measure.emHeightAscent)
+                f.ctx.fillText(guild.nameAcronym, 0, measure.actualBoundingBoxAscent)
                 f.ctx.restore()
             }
             f.ctx.font = f.ctx.font = "25px Whitney-Medium"
             const text = `${guild.name}'s Preapproved Colors`
             const measure = f.ctx.measureText(text)
             f.ctx.fillStyle = "#ffffff"
-            f.ctx.fillText(text, guildIconSize + 10, measure.emHeightAscent)
+            f.ctx.fillText(text, guildIconSize + 10, measure.actualBoundingBoxAscent)
 
             const startX = 10
             const offsetY = 30

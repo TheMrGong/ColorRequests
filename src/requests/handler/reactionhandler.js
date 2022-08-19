@@ -9,7 +9,7 @@ import guildConfig from "../../guildconfig/guildconfigs"
 
 /**
  * 
- * @param {Discord.MessageReaction} reaction 
+ * @param {Discord.MessageReaction | Discord.PartialMessageReaction} reaction 
  * @param {Discord.User | Discord.PartialUser} user 
  */
 export default async (reaction, user) => {

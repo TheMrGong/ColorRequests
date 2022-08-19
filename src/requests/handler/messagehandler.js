@@ -79,12 +79,12 @@ export default async (message) => {
             return
         }
 
-        const mentionedChannels = message.mentions.channels.array()
-        if (mentionedChannels.length == 0) {
+        const mentionedChannels = message.mentions.channels
+        if (mentionedChannels.size == 0) {
             message.channel.send("Usage: " + config.prefix + "setcolorchannel #my-cool-channel")
             return
         }
-        const channel = mentionedChannels[0]
+        const channel = mentionedChannels.first()
         if(!(channel instanceof Discord.TextChannel)) {
             message.channel.send(`Must be a text channel`)
             return
@@ -98,8 +98,8 @@ export default async (message) => {
         }
         let role;
 
-        const mentionedRoles = message.mentions.roles.array()
-        if (mentionedRoles.length > 0) role = mentionedRoles[0]
+        const mentionedRoles = message.mentions.roles
+        if (mentionedRoles.size > 0) role = mentionedRoles.first()
         else if (args.length > 0) role = await message.guild.roles.fetch(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setacceptrole <@Mods | 481910962291736576>")
@@ -114,8 +114,8 @@ export default async (message) => {
         }
         let role;
 
-        const mentionedRoles = message.mentions.roles.array()
-        if (mentionedRoles.length > 0) role = mentionedRoles[0]
+        const mentionedRoles = message.mentions.roles
+        if (mentionedRoles.size > 0) role = mentionedRoles.first();
         else if (args.length > 0) role = await message.guild.roles.fetch(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
@@ -133,8 +133,8 @@ export default async (message) => {
         }
         let role;
 
-        const mentionedRoles = message.mentions.roles.array()
-        if (mentionedRoles.length > 0) role = mentionedRoles[0]
+        const mentionedRoles = message.mentions.roles
+        if (mentionedRoles.size > 0) role = mentionedRoles.first()
         else if (args.length > 0) role = await message.guild.roles.fetch(idToFlake(args[0]))
         if (!role) {
             message.channel.send("Usage: " + config.prefix + "setchangerole <@Patreons | 481910962291736576>")
@@ -160,7 +160,9 @@ export default async (message) => {
             return undefined
         })
         if (!image) message.channel.send("Error generating image!")
-        else message.channel.send(new Discord.MessageAttachment(image, "help.gif"))
+        else message.channel.send({
+            files: [new Discord.MessageAttachment(image, "help.gif")]
+        })
     } else if (cmd.toLowerCase() == "pick") {
         if (!member.permissions.has(CONFIG_PERM) && member.id != GONGO) {
             message.channel.send("You don't have permission to generate pickables")
@@ -174,7 +176,7 @@ export default async (message) => {
         })
         if (!image) message.channel.send("Error generating image!")
         else {
-            /**@type {Discord.MessageActionRowOptions[]} */
+            /**@type {(Discord.MessageActionRow | (Required<Discord.BaseMessageComponentOptions> & Discord.MessageActionRowOptions))[]} */
             const components = []
 
             /**@type {Discord.MessageActionRowComponentResolvable[]} */
@@ -183,7 +185,7 @@ export default async (message) => {
             aliases.forEach((alias) => {
                 currentRow.push({
                     type: `BUTTON`,
-                    customID: `color;${alias.name}`,
+                    customId: `color;${alias.name}`,
                     label: formatCaps(alias.name.replace(`-`, ` `)),
                     style: `SECONDARY`
                 })
@@ -201,7 +203,18 @@ export default async (message) => {
                     components: currentRow
                 })
             }
-            await message.channel.send(new Discord.MessageAttachment(image, "help.gif"))
+            components.push({
+                type: `ACTION_ROW`,
+                components: [{
+                    type: `BUTTON`,
+                    customId: `removecolor`,
+                    label: `Remove Color`,
+                    style: `DANGER`
+                }]
+            })
+            await message.channel.send({
+                files: [new Discord.MessageAttachment(image, "help.gif")]
+            })
             await message.channel.send({
                 content: `To get your own color, click a button below`,
                 components

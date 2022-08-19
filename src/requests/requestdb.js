@@ -2,7 +2,7 @@
 
 const Discord = require("discord.js")
 
-const hexToRgb = require("../util/rgbutil")
+import hexToRgb from "../util/rgbutil"
 
 const TABLE_NAME = "requests"
 const { query } = require("../util/sql")
@@ -80,7 +80,7 @@ async function multiDeleteRequests(guildId, ...requests) {
     return await query(MULTI_DELETE, [guildId, requests])
 }
 
-module.exports = {
+export default {
     ready,
     getGuildRequests,
     registerNewRequest,

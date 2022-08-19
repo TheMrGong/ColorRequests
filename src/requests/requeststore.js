@@ -4,7 +4,7 @@ const Discord = require("discord.js")
 const rgbUtil = require("../util/rgbutil")
 
 import bot from "../bot"
-const db = require("./requestdb")
+import db from "./requestdb"
 
 import { UserContext } from "../util/discordutil"
 
@@ -69,7 +69,7 @@ async function filterValidRequests(guildId, requests) {
     for (let k in requests) {
         const request = requests[k]
 
-        const channel = guild.channels.cache.get(guild.channels.resolveID(request.pendingMessage.channelId))
+        const channel = guild.channels.cache.get(guild.channels.resolveId(request.pendingMessage.channelId))
         if (!(channel instanceof Discord.TextChannel)) { // channel no longer exists
             invalidRequests.push(request)
             console.log(`Couldn't find channel for pending request, invalidating - ${channel}, ${request.pendingMessage.channelId}`)

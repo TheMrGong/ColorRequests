@@ -6,7 +6,7 @@ const Discord = require("discord.js")
 const TABLE_NAME = "color_alias"
 const { query } = require("../../util/sql")
 
-const rgbFromHex = require("../../util/rgbutil")
+import rgbFromHex from "../../util/rgbutil"
 
 const CREATE_TABLE = `CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     guildId BIGINT NOT NULL,

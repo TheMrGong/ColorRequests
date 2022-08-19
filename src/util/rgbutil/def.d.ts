@@ -1,11 +1,11 @@
-class RGBColor {
+export class RGBColor {
     r: number
     g: number
     b: number
 
-    hexColor(): string
+    hexColor(): Discord.HexColorString
 }
 
 class RGBColorInfo {
-    color: string
+    color: Discord.HexColorString
 }

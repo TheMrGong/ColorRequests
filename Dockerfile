@@ -1,4 +1,4 @@
-FROM node:15-alpine
+FROM node:16-alpine
 
 # https://stackoverflow.com/questions/57088230/node-canvas-on-alpine-within-docker
 
@@ -14,8 +14,13 @@ RUN apk add --no-cache \
     pango-dev \
     cairo-dev \
     giflib-dev \
-    python \
     ;
+# https://stackoverflow.com/questions/62554991/how-do-i-install-python-on-alpine-linux
+# Install python/pip
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
 
 # add glibc
 RUN apk --no-cache add ca-certificates wget  && \
@@ -29,13 +34,10 @@ RUN apk add --no-cache ffmpeg bash
 
 WORKDIR /usr/src/app
 
-RUN npm install -g pnpm
-RUN pnpm install -g pnpm
-
 COPY ./package.json /usr/src/app
 COPY ./pnpm-lock.yaml /usr/src/app
 
-RUN pnpm install
+RUN npm install
 COPY . /usr/src/app
 
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]

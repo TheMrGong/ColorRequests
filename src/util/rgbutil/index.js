@@ -1,10 +1,11 @@
 //@ts-check
+import Discord from "discord.js"
 
 /**
  * @param {string} hex Input hex code
  * @returns {RGBColor|null}
  */
-function hexToRgb(hex) {
+export default function hexToRgb(hex) {
     if (hex.startsWith("0x")) hex = hex.substring(2)
     if (hex.startsWith("#")) hex = hex.substring(1)
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -24,13 +25,12 @@ function rgbToHex(color) {
         hex = "0" + hex;
     return hex;
 }
-
 /**
  * @typedef RGBColor
  * @property {number} r 
  * @property {number} g 
  * @property {number} b 
- * @property {function(): string} hexColor
+ * @property {function(): Discord.HexColorString} hexColor
  */
 
 class RGBColorImpl {
@@ -47,15 +47,12 @@ class RGBColorImpl {
     }
 
     /**
-     * @returns {string} Hex code representing the red green and blue
+     * @returns {Discord.HexColorString} Hex code representing the red green and blue
      */
     hexColor() {
         var red = rgbToHex(this.r);
         var green = rgbToHex(this.g);
         var blue = rgbToHex(this.b);
-        return red + green + blue;
+        return `#${red + green + blue}`;
     }
 }
-
-
-module.exports = hexToRgb

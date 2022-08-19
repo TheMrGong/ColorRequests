@@ -35,9 +35,8 @@ export default async function (deleted) {
         guildId = deleted.guild.id
     } else if (deleted instanceof Discord.Collection) { // bulk delete
         if (deleted.size > 0) {
-            const array = deleted.array()
-            for (let k in array) {
-                const colorRequest = await requestStore.findRequestByMessage(array[k])
+            for(const [_, msg] of deleted.entries()) {
+                const colorRequest = await requestStore.findRequestByMessage(msg)
                 if (colorRequest) deleting.push(colorRequest)
             }
             guildId = deleted.first().guild.id

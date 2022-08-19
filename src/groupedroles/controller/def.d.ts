@@ -4,7 +4,7 @@ class DepCreateGroupedRole {
 }
 
 const makeCreateGroupedRole_: (dependencies: DepCreateGroupedRole) => typeof createGroupedRole_
-const createGroupedRole_: (guildId: `${bigint}`, roleColor: RGBColor, roleName: string) => Promise<import('discord.js').Role>
+const createGroupedRole_: (guildId: string, roleColor: RGBColor, roleName: string) => Promise<import('discord.js').Role>
 
 
 class DepRemoveGroupedRole {
@@ -12,7 +12,7 @@ class DepRemoveGroupedRole {
 }
 
 const makeRemoveGroupedRole: (dependencies: DepRemoveGroupedRole) => typeof deleteGroupedRole_
-const removeGroupedRole_: (guildId: `${bigint}`, roleId: `${bigint}`) => Promise<IGroupedRole>
+const removeGroupedRole_: (guildId: string, roleId: string) => Promise<IGroupedRole>
 
 class DepHandleLossRole {
     deleteGroupedRole: typeof deleteGroupedRole_

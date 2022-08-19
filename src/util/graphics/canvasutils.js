@@ -1,7 +1,7 @@
 //@ts-check
 
 const canvasAPI = require("canvas")
-const { wrapImage } = require("./gifutil")
+import { wrapImage  } from "./gifutil";
 
 /**
  * @typedef {Object} RadiusConfig

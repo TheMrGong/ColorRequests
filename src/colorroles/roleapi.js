@@ -166,9 +166,9 @@ async function setup(client) {
     client.on("guildMemberRemove", userQuit)
     client.on("guildMemberUpdate", memberUpdate)
 
-    const guilds = client.guilds.cache.array()
-    for (let k in guilds) // pre-cache all current guilds
-        await roleStore.getColorRoles(guilds[k].id)
+    for(const [k, guild] of client.guilds.cache.entries()) {
+        await roleStore.getColorRoles(k) // pre-cache all current guilds
+    }
     return roleDB.ready
 }
 

@@ -2,7 +2,7 @@
 
 /**@typedef {import("./coloraliasapi.js").ColorAlias} ColorAlias */
 
-const rgbFromHex = require("../../util/rgbutil")
+import rgbFromHex from "../../util/rgbutil"
 
 /**@type {ColorAlias[]} */
 const defaultAliases = fromObjects([

@@ -46,7 +46,7 @@ const ready = new Promise((resolve, reject) => {
         resolve()
     })
 })
-const rgbUtil = require("../util/rgbutil")
+import rgbUtil from "../util/rgbutil"
 
 const QUERY_CONFIG = `SELECT requestChannelId, acceptRoleId, preapproved_colors FROM ${CONFIG_TABLE} WHERE guildId = ?`
 const SET_CONFIG = (type) => `INSERT INTO ${CONFIG_TABLE} (guildId, requestChannelId, acceptRoleId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ${type} = VALUES(${type})`
@@ -165,7 +165,7 @@ async function setGuildPreapprovedColors(guildId, ...preapprovedColors) {
     return await query(SET_COLORS, [guildId, preapprovedColors.map(it => it.hexColor()).join(",")])
 }
 
-module.exports = {
+export default {
     ready,
     getGuildConfig,
     setGuildRequestChannelId,

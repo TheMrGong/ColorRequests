@@ -14,12 +14,12 @@ function makeFindGroupedRole({
     /**
      * 
      * @param {Discord.Snowflake} guildId 
-     * @param {string} color
+     * @param {Discord.HexColorString} color
      * @returns {Promise<IGroupedRole>}
      */
     async function findGroupedRole(guildId, color) {
         return cache.getGroupedRoles(guildId).find(it => it.getRoleColor().hexColor() == color)
     }
 }
-/**@type {typeof makeAddGroupedRole_} */
+/**@type {typeof makeFindGroupedRole_} */
 export default makeFindGroupedRole

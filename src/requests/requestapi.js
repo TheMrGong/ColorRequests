@@ -293,7 +293,9 @@ async function generateRequestMessage(channel, requester, requestingColor) {
     const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL({
         format: `png`
     }), "#" + requestingColor.hexColor())
-    const message = await channel.send(new Discord.MessageAttachment(image, "display.gif"))
+    const message = await channel.send({
+        files: [new Discord.MessageAttachment(image, "display.gif")]
+    })
 
     if (message instanceof Discord.Message) {
         message.react(ACCEPT_EMOJI).then(() => message.react(DECLINE_EMOJI))
@@ -313,7 +315,9 @@ async function generateEditMessage(channel, requester, changingColor) {
     const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL({
         format: `png`
     }), "#" + changingColor.hexColor())
-    const message = await channel.send(new Discord.MessageAttachment(image, "display.gif"))
+    const message = await channel.send({
+        files: [new Discord.MessageAttachment(image, "display.gif")]
+    })
 
     if (message instanceof Discord.Message) {
         message.react(ACCEPT_EMOJI).then(() => message.react(DECLINE_EMOJI))
@@ -336,9 +340,10 @@ async function setup(client) {
     client.on("channelDelete", deletionHandler)
     client.on("interaction", interactionHandler)
 
-    const guilds = client.guilds.cache.array()
-    for (let k in guilds) // pre-cache all current guilds
-        await requestStore.getGuildPending(guilds[k].id)
+    for(const [k, guild] of client.guilds.cache.entries()) { // pre-cache all current guilds
+        await requestStore.getGuildPending(k)
+    }
+
     //@ts-ignore
     return requestDB.ready
 }

@@ -1,5 +1,5 @@
 interface IGroupedRole {
-    getRoleId(): `${bigint}`
+    getRoleId(): string
     getRoleColor(): RGBColor
 
     isDeleting(): boolean
@@ -11,8 +11,8 @@ interface IGroupedRole {
 }
 
 class GroupedRoleInfo {
-    roleId: `${bigint}`
-    roleColor: string
+    roleId: string
+    roleColor: Discord.HexColorString
 }
 
 const makeGroupedRole_: (info: GroupedRoleInfo) => IGroupedRole

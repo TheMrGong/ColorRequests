@@ -104,7 +104,7 @@ class InteractionUserContext extends UserContext {
     }
 
     /**
-     * @param {string | Discord.MessageOptions & { split?: false; }} message 
+     * @param {string} message 
      */
     async sendMessage(message) {
         const msg = typeof message === `string` ? {
