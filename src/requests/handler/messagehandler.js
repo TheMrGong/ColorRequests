@@ -8,7 +8,7 @@ const config = require("../../config")
 import guildConfig from "../../guildconfig/guildconfigs"
 
 const requestApi = require("../requestapi")
-const colorAlias = require("../../guildconfig/coloralias/coloraliasapi")
+import colorAlias from "../../guildconfig/coloralias/coloraliasapi"
 import requestImages from "../requestimages"
 import roleStore from "../../colorroles/rolestore"
 

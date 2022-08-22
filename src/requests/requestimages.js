@@ -63,8 +63,9 @@ async function generateChangeImage(userName, profileURL, newColor) {
             const info = f.ctx.measureText(userName)
 
             //frame.ctx.font = frame.ctx.font = "15px Whitney-Book"
-            f.ctx.font = f.ctx.font = "15px Whitney-Book"
-            f.ctx.fillText(exampleText, 50, 20 + info.actualBoundingBoxAscent + 5)
+            const fontSize = 15
+            f.ctx.font = f.ctx.font = (fontSize + "px Whitney-Book")
+            f.ctx.fillText(exampleText, 50, 20 + fontSize + 5)
         })
     context.backgroundColor = "#36393f"
     return await context.generateGif()

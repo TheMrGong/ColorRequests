@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/TheMrGong/ColorRequsts#readme",
   "dependencies": {
-    "canvas": "^2.8.0",
+    "canvas": "^2.9.3",
     "discord.js": "^13.10.2",
     "gif-frames": "^1.0.1",
     "mysql": "^2.18.1",
