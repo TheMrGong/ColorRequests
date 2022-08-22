@@ -8,7 +8,7 @@ const { query } = require("../util/sql")
 
 const guildConfigs = require('./guildconfigs')
 
-const defaultAliases = require("./coloralias/defaultalias")
+import defaultAliases from "./coloralias/defaultalias"
 
 const CREATE_TABLE = `CREATE TABLE IF NOT EXISTS ${CONFIG_TABLE} (
     guildId BIGINT NOT NULL,
@@ -47,6 +47,7 @@ const ready = new Promise((resolve, reject) => {
     })
 })
 import rgbUtil from "../util/rgbutil"
+import { RGBColor } from "../util/rgbutil"
 
 const QUERY_CONFIG = `SELECT requestChannelId, acceptRoleId, preapproved_colors FROM ${CONFIG_TABLE} WHERE guildId = ?`
 const SET_CONFIG = (type) => `INSERT INTO ${CONFIG_TABLE} (guildId, requestChannelId, acceptRoleId) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE ${type} = VALUES(${type})`
@@ -74,7 +75,7 @@ async function getGuildConfig(guildId) {
     }
     const data = result[0]
     const colorData = data.preapproved_colors
-    /**@type {rgbUtil.RGBColor[]} */
+    /**@type {RGBColor[]} */
     let preapprovedColors = []
     if (colorData) {
         const hexColors = colorData.split(",")
@@ -159,7 +160,7 @@ async function setGuildAcceptRoleId(guildId, acceptRoleId) {
 /**
  * 
  * @param {Discord.Snowflake} guildId 
- * @param {...rgbUtil.RGBColor} preapprovedColors 
+ * @param {...RGBColor} preapprovedColors 
  */
 async function setGuildPreapprovedColors(guildId, ...preapprovedColors) {
     return await query(SET_COLORS, [guildId, preapprovedColors.map(it => it.hexColor()).join(",")])

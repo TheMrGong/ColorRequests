@@ -9,7 +9,7 @@ export default function hexToRgb(hex) {
     if (hex.startsWith("0x")) hex = hex.substring(2)
     if (hex.startsWith("#")) hex = hex.substring(1)
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? new RGBColorImpl(
+    return result ? new RGBColor(
         parseInt(result[1], 16),
         parseInt(result[2], 16),
         parseInt(result[3], 16)) : null;
@@ -25,15 +25,8 @@ function rgbToHex(color) {
         hex = "0" + hex;
     return hex;
 }
-/**
- * @typedef RGBColor
- * @property {number} r 
- * @property {number} g 
- * @property {number} b 
- * @property {function(): Discord.HexColorString} hexColor
- */
 
-class RGBColorImpl {
+export class RGBColor {
     /**
      * 
      * @param {number} r 
@@ -54,5 +47,24 @@ class RGBColorImpl {
         var green = rgbToHex(this.g);
         var blue = rgbToHex(this.b);
         return `#${red + green + blue}`;
+    }
+
+    /**
+     * 
+     * @param {RGBColor} color 
+     * @returns {boolean} if they're the same
+     */
+    compareAgainst(color) {
+        return this.r == color.r && this.g == color.g && this.b == color.b
+    }
+}
+
+export class RGBColorInfo {
+    /**
+     * 
+     * @param {Discord.HexColorString}  color
+     */
+     constructor(color) {
+        this.color = color
     }
 }

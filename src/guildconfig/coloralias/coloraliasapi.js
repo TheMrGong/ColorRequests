@@ -2,20 +2,20 @@
 
 const Discord = require("discord.js")
 
-const defaultAliases = require("./defaultalias")
+import { RGBColor } from "../../util/rgbutil"
+import defaultAliases from "./defaultalias"
 
 /**
  * @typedef ColorAlias
  * @property {string} name
- * @property {rgbUtil.RGBColor} color
+ * @property {RGBColor} color
  */
 
 // key is guild id
 /**@type {Object.<string, ColorAlias[]>} */
 const colorAliases = {}
 
-const rgbUtil = require("../../util/rgbutil")
-const db = require("./coloraliasdb")
+import db from "./coloraliasdb"
 
 /**
  * 
@@ -55,7 +55,7 @@ async function getColorAlias(guildId, name) {
  * 
  * @param {Discord.Snowflake} guildId 
  * @param {string} name 
- * @param {rgbUtil.RGBColor} color
+ * @param {RGBColor} color
  */
 async function addColorAlias(guildId, name, color) {
     name = name.toLowerCase()
@@ -83,7 +83,7 @@ async function removeColorAlias(guildId, name) {
 }
 
 
-module.exports = {
+export default {
     ready: db.ready,
     getColorAliases,
     getColorAlias,

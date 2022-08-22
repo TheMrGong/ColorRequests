@@ -107,4 +107,4 @@ function fromObjects(obj) {
     return aliases
 }
 
-module.exports = defaultAliases
+export default defaultAliases

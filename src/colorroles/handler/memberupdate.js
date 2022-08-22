@@ -18,7 +18,7 @@ export default async (oldMember, newMember) => {
     const removedGroupRoles = removedRoles.filter(role => groupRoles.filter(it => it.id == role.id).length > 0)
 
     if (removedGroupRoles.size > 0) {
-        groupRolesAPI.handleLossRole(oldMember, removedGroupRoles.array())
+        groupRolesAPI.handleLossRole(oldMember, removedGroupRoles.map((role, _) => role))
     }
     if (!colorRole) return // they don't have a role
     if (!newMember.roles.cache.has(colorRole.roleId) && !colorRole.deleting) { // their role was removed, delete

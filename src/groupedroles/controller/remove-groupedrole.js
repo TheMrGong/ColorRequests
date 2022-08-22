@@ -32,7 +32,7 @@ export default function makeRemoveGroupedRole({ deleteGroupedRole }) {
                 role.delete(`Grouped role being deleted`).catch(e => console.warn("Unable to delete role", e))
             }
         } else {
-            console.warn("Unable to find group role for guild to delete, color#" + removed.getRoleColor().hexColor())
+            console.warn("Unable to find group role for guild to delete, color " + removed.getRoleColor().hexColor())
         }
         return removed
     }

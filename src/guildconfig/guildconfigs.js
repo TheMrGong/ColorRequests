@@ -6,6 +6,7 @@ const Discord = require("discord.js")
 const guildConfigs = {}
 import db from "./guildconfigdb"
 import rgbUtil from "../util/rgbutil"
+import { RGBColor } from "../util/rgbutil"
 
 const DEFAULT_PERMISSION = "MANAGE_ROLES"
 
@@ -14,7 +15,7 @@ const DEFAULT_PERMISSION = "MANAGE_ROLES"
  * @property {Discord.Snowflake|null} requestChannelId 
  * @property {Discord.Snowflake|null} acceptingRoleId
  * @property {Discord.Snowflake[]} acceptedChangeRoles
- * @property {rgbUtil.RGBColor[]} preapprovedColors
+ * @property {RGBColor[]} preapprovedColors
  */
 
 /**
@@ -60,8 +61,6 @@ async function memberCanChangeColor(guildMember) {
             return true
         }
     }
-    console.log("guild member " + guildMember.user.username+" couldn't change their color role, roles: " + guildMember.roles.cache.keyArray().join(", "))
-    console.log("accepted change roles: " + config.acceptedChangeRoles.join(", "))
     
     return false
 }
@@ -149,17 +148,17 @@ async function removeChangeRole(guildId, changeRoleId) {
 
 /**
  * @param {Discord.Snowflake} guildId 
- * @param {rgbUtil.RGBColor} color 
+ * @param {RGBColor} color 
  * @returns {Promise<boolean>}
  */
 async function isPreapprovedColor(guildId, color) {
     const guildConfig = await getGuildConfig(guildId)
-    return guildConfig.preapprovedColors.filter(it => it.hexColor() == color.hexColor()).length > 0
+    return guildConfig.preapprovedColors.filter(it => it.compareAgainst(color)).length > 0
 }
 
 /**
  * @param {Discord.Snowflake} guildId 
- * @param {rgbUtil.RGBColor} color 
+ * @param {RGBColor} color 
  */
 async function addPreapprovedColor(guildId, color) {
     if (await isPreapprovedColor(guildId, color)) return // color is already approved
@@ -170,12 +169,12 @@ async function addPreapprovedColor(guildId, color) {
 
 /**
  * @param {Discord.Snowflake} guildId 
- * @param {rgbUtil.RGBColor} color 
+ * @param {RGBColor} color 
  */
 async function removePreapprovedColor(guildId, color) {
     if (!(await isPreapprovedColor(guildId, color))) return // color isn't approved
     const guildConfig = await getGuildConfig(guildId)
-    guildConfig.preapprovedColors = guildConfig.preapprovedColors.filter(it => it.hexColor() != color.hexColor())
+    guildConfig.preapprovedColors = guildConfig.preapprovedColors.filter(it => !it.compareAgainst(color))
     await db.setGuildPreapprovedColors(guildId, ...guildConfig.preapprovedColors)
 }
 

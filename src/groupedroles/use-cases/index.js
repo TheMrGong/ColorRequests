@@ -9,7 +9,7 @@ import makeDeleteGroupedRole from "./delete-groupedrole"
 import makeFindGroupedRole from "./find-groupedrole"
 import makeGetGroupedRole from "./get-groupedrole"
 
-import hexToRGB from "../../util/rgbutil"
+import hexToRGB, { RGBColorInfo, RGBColor } from "../../util/rgbutil"
 
 const makeGroupedRole = buildMakeGroupedRole({
     makeRGBColor

@@ -4,6 +4,7 @@
 
 import Discord from "discord.js"
 import bot from "../../bot"
+import { RGBColor } from "../../util/rgbutil"
 
 /**
  * @param {DepCreateGroupedRole} param 

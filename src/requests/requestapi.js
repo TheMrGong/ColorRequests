@@ -11,7 +11,7 @@ import roleApi from "../colorroles/roleapi"
 import roleStore from "../colorroles/rolestore"
 
 import requestImages from "./requestimages"
-const colorAliases = require("../guildconfig/coloralias/coloraliasapi")
+import colorAliases from "../guildconfig/coloralias/coloraliasapi"
 import discordUtil, { idToFlake, UserContext } from "../util/discordutil"
 
 import { createGroupedRole, findGroupedRole, removeGroupedRole, findGroupRoles, handleLossRole } from "../groupedroles"
@@ -71,7 +71,7 @@ async function doAccept(requestingMessage, member, color) {
     // check if they're trying to change their color to same one
     if(existingRole) {
         const role = await member.guild.roles.fetch(existingRole.roleId)
-        if(role && role.hexColor.substring(1) === color.hexColor()) {
+        if(role && role.hexColor.substring(1) === color.hexColor().substring(1)) {
             return false
         }
     }
@@ -160,12 +160,12 @@ async function doAccept(requestingMessage, member, color) {
 /**
  * @param {Discord.Guild} guild
  * @param {ColorRole[]} sameRoles 
- * @param {RGBColor} color
+ * @param {rgbUtil.RGBColor} color
  * @returns {Promise<Discord.Role>} if initiator was able to get their role
  */
 async function mergeSameColorRoles(guild, sameRoles, color) {
-    const alias = (await colorAliases.getColorAliases(guild.id)).find(it => it.color.hexColor() == color.hexColor())
-    const name = alias ? "Grouped " + alias.name : "Grouped #" + color.hexColor()
+    const alias = (await colorAliases.getColorAliases(guild.id)).find(it => it.color.compareAgainst(color))
+    const name = alias ? "Grouped " + alias.name : "Grouped " + color.hexColor()
 
     const existingGroupedRole = await findGroupedRole(guild.id, color.hexColor())
     let role;
@@ -292,7 +292,7 @@ async function handleCancel(message, colorRequest) {
 async function generateRequestMessage(channel, requester, requestingColor) {
     const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL({
         format: `png`
-    }), "#" + requestingColor.hexColor())
+    }), requestingColor.hexColor())
     const message = await channel.send({
         files: [new Discord.MessageAttachment(image, "display.gif")]
     })
@@ -314,7 +314,7 @@ async function generateRequestMessage(channel, requester, requestingColor) {
 async function generateEditMessage(channel, requester, changingColor) {
     const image = await requestImages.generateChangeImage(requester.displayName, requester.user.displayAvatarURL({
         format: `png`
-    }), "#" + changingColor.hexColor())
+    }), changingColor.hexColor())
     const message = await channel.send({
         files: [new Discord.MessageAttachment(image, "display.gif")]
     })

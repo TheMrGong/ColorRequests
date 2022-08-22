@@ -5,7 +5,7 @@ import { CREATE_TABLE, QUERY_STATEMENTS } from "./sql"
 import makeGroupDb from "./grouped.db"
 import buildMakeGroupedRole from "../groupedrole"
 
-import hexToRgb from "../../util/rgbutil"
+import hexToRgb, {RGBColorInfo} from "../../util/rgbutil"
 
 /**
  * 

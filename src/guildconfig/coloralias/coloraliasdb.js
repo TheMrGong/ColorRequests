@@ -7,6 +7,7 @@ const TABLE_NAME = "color_alias"
 const { query } = require("../../util/sql")
 
 import rgbFromHex from "../../util/rgbutil"
+import { RGBColor } from "../../util/rgbutil"
 
 const CREATE_TABLE = `CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
     guildId BIGINT NOT NULL,
@@ -45,7 +46,7 @@ async function getColorAliases(guildId) {
 /**
  * @param {Discord.Snowflake} guildId 
  * @param {string} name 
- * @param {rgbFromHex.RGBColor} color 
+ * @param {RGBColor} color 
  */
 async function addOrUpdateColorAlias(guildId, name, color) {
     return await query(ADD_OR_UPDATE_ALIAS, [guildId, name.toLowerCase(), color.hexColor()])
@@ -76,7 +77,7 @@ async function removeColorAlias(guildId, name) {
     return await query(REMOVE_ALIAS, [guildId, name.toLowerCase()])
 }
 
-module.exports = {
+export default {
     ready,
     getColorAliases,
     addOrUpdateColorAlias,
