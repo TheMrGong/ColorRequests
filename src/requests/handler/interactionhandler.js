@@ -7,8 +7,8 @@ import roleApi from "../../colorroles/roleapi"
 import roleStore from "../../colorroles/rolestore"
 const groupRolesAPI = require("../../groupedroles")
 
-const requestApi = require("../requestapi")
-const colorAlias = require("../../guildconfig/coloralias/coloraliasapi")
+import requestApi from "../requestapi"
+import colorAlias from "../../guildconfig/coloralias/coloraliasapi"
 
 /**
  * @param {Discord.Interaction} interaction 
