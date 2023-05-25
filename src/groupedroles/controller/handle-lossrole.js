@@ -30,7 +30,10 @@ export default function makeHandleLossRole({ deleteGroupedRole, getGroupedRole }
             if (remaining == 0) {
 
                 const groupedRole = await getGroupedRole(member.guild.id, lossRole.id)
-                if (!groupedRole) console.warn("Skipping role " + lossRole.name + ", wasn't grouped role")
+                if (!groupedRole) {
+                    console.warn("Skipping role " + lossRole.name + ", wasn't grouped role")
+                    continue
+                }
                 try {
                     if (!groupedRole.isDeleting()) {
                         groupedRole.setDeleting(true)
