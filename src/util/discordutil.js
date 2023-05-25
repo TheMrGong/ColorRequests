@@ -44,7 +44,7 @@ export class UserContext {
      * @param {Discord.Message} message 
      */
     static async ofMessage(message) {
-        if(!(message.channel instanceof Discord.TextChannel)) {
+        if(!(message.channel instanceof Discord.BaseGuildTextChannel) && !(message.channel instanceof Discord.ThreadChannel)) {
             throw new Error(`Only supports text channels`)
         }
         let member = message.member
@@ -68,7 +68,7 @@ class MessageUserContext extends UserContext {
     /**
      * @param {Discord.Guild} guild 
      * @param {Discord.GuildMember} member 
-     * @param {Discord.TextChannel} channel 
+     * @param {Discord.PartialTextBasedChannelFields} channel 
      * @param {Discord.Message} message
      */
     constructor(guild, member, channel, message) {
