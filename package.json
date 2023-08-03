@@ -34,7 +34,7 @@
     "mysql": "^2.18.1",
     "node-fetch": "^2.6.1",
     "rgb-hsv": "^1.0.0",
-    "sharp": "^0.28.3"
+    "sharp": "^0.30.5"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",
